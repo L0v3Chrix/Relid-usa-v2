@@ -50,6 +50,18 @@ const Hero: React.FC = () => {
         </div>
       </div>
 
+      {/* Logo - Bottom Right (Doubled Size) */}
+      <a
+        href="#hero"
+        className="absolute bottom-8 right-8 z-20 group hidden md:block"
+      >
+        <img
+          src="/images/relid-logo.png"
+          alt="ReLid USA - Resealable Aluminum Can Technology"
+          className="h-32 md:h-40 w-auto transition-transform duration-300 group-hover:scale-105 drop-shadow-2xl"
+        />
+      </a>
+
       {/* Bottom Gradient Fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-brand-black to-transparent z-10"></div>
     </section>

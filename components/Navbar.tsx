@@ -37,13 +37,11 @@ const Navbar: React.FC = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        {/* Logo */}
+        {/* Text Logo - Links to Hero */}
         <a href="#hero" className="flex items-center group">
-          <img
-            src="/images/relid-logo.png"
-            alt="ReLid USA - Resealable Aluminum Can Technology"
-            className="h-16 md:h-20 w-auto transition-transform duration-300 group-hover:scale-105"
-          />
+          <span className="text-2xl md:text-3xl font-heading font-bold text-white group-hover:text-brand-green transition-colors duration-300">
+            RE<span className="text-brand-green">→</span>LID <span className="text-brand-green">USA</span>
+          </span>
         </a>
 
         {/* Desktop Nav */}

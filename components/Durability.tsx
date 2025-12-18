@@ -58,10 +58,10 @@ const Durability: React.FC = () => {
 
         <div className="space-y-8 mt-8 lg:mt-0">
            {/* Exploded View Diagram */}
-          <div className="bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-6 border border-white/20 shadow-xl">
              <img
-                src="/images/durability-exploded.png"
-                alt="ReLid USA Exploded View - Double-seal durability, corrosion-resistant alloy, spring-loaded lock, integrated pressure release"
+                src="/images/exploded-lid.png"
+                alt="ReLid USA Exploded 3D View - Three-layer construction with top lid, green gasket seal ring, and sliding mechanism base"
                 className="w-full h-auto rounded-xl"
              />
           </div>

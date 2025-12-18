@@ -8,8 +8,8 @@ const About: React.FC = () => {
         <div className="order-2 lg:order-1 relative">
            <div className="rounded-2xl overflow-hidden border border-white/10 relative group">
               <img
-                src="/images/manufacturing.png"
-                alt="ReLid USA Manufacturing Facility - Modern automated production line with precision machinery"
+                src="/images/factory.png"
+                alt="ReLid USA Manufacturing Facility - Real factory floor with RE→LID USA banner, workers, and conveyor line producing resealable aluminum can lids"
                 className="w-full h-auto"
               />
 

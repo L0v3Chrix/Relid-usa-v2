@@ -1,21 +1,20 @@
 import React from 'react';
 import Section from './ui/Section';
 import { Activity } from 'lucide-react';
-import { BENEFITS } from '../constants';
 import Button from './ui/Button';
 
-// Map to actual can images (PNG with transparent backgrounds)
-const imageMap: Record<string, string> = {
-  Coffee: '/images/coffee-can.png',
-  Zap: '/images/energy-can.png',
-  Droplets: '/images/water-can.png',
-  Wine: '/images/beer-can.png',
-};
-
 const ProductBenefits: React.FC = () => {
+  // Category descriptions for the can types shown in the image
+  const categories = [
+    { name: 'Water', desc: 'Keep hydration fresh and portable.' },
+    { name: 'Coffee', desc: 'Lock in flavor, enjoy at your pace.' },
+    { name: 'Energy', desc: 'Reseal the boost for when you need it.' },
+    { name: 'Wine & Spirits', desc: 'Premium experience, preserved.' },
+  ];
+
   return (
     <Section id="product-benefits" className="bg-brand-black text-white border-t border-white/10">
-      <div className="text-center mb-16">
+      <div className="text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-heading font-bold mb-4 text-white">
           Upgrade Your Product. <br/>
           <span className="text-brand-green">Elevate Your Brand.</span>
@@ -25,22 +24,28 @@ const ProductBenefits: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-        {BENEFITS.map((benefit) => (
-          <div key={benefit.category} className="group p-8 border border-white/10 rounded-2xl hover:border-brand-green hover:shadow-2xl hover:shadow-brand-green/10 transition-all duration-300 bg-white/5 hover:bg-white/10 text-center flex flex-col items-center">
-            <div className="mb-6 h-32 w-32 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <img
-                src={imageMap[benefit.iconName] || '/images/coffee-can.png'}
-                alt={`${benefit.category} can illustration`}
-                className="h-full w-auto object-contain"
-              />
-            </div>
-            <h3 className="text-2xl font-heading font-bold mb-3 text-white">{benefit.category}</h3>
-            <p className="text-brand-gray leading-relaxed text-sm">{benefit.text}</p>
+      {/* Featured Can Types Image */}
+      <div className="max-w-4xl mx-auto mb-12">
+        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
+          <img
+            src="/images/can-types.png"
+            alt="ReLid USA Compatible Beverage Categories - Water (blue), Coffee (brown), Energy (green), Wine/Grape (burgundy)"
+            className="w-full h-auto"
+          />
+        </div>
+      </div>
+
+      {/* Category Text Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 max-w-4xl mx-auto">
+        {categories.map((cat) => (
+          <div key={cat.name} className="text-center p-4">
+            <h3 className="text-xl font-heading font-bold mb-2 text-white">{cat.name}</h3>
+            <p className="text-sm text-brand-gray">{cat.desc}</p>
           </div>
         ))}
       </div>
 
+      {/* Seamless Integration CTA */}
       <div className="bg-white/5 rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-white/10">
         <div className="flex items-center gap-6">
           <div className="p-4 bg-brand-green/20 rounded-full text-brand-green hidden sm:block">
