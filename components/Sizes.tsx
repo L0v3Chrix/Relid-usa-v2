@@ -18,7 +18,7 @@ const Sizes: React.FC = () => {
 
       {/* Real Can Sizes Image */}
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
+        <div className="p-4 md:p-8">
           <img
             src="/images/can-sizes.png"
             alt="ReLid USA Available Can Sizes - STANDARD (traditional 12oz), SLEEK (taller slim design), SLIM (tallest energy drink format)"

@@ -13,7 +13,7 @@ const HowItWorks: React.FC = () => {
 
       {/* Single Unified 4-Step Instruction Image */}
       <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-2xl p-6 md:p-10 shadow-2xl border border-white/20">
+        <div className="p-4 md:p-8">
           <img
             src="/images/how-it-works.png"
             alt="ReLid USA 4-Step Process: Step 1 - Start CLOSED, Step 2 - LIFT TAB END, Step 3 - SLIDE BACK TO DRINK, Step 4 - SLIDE FORWARD TO RESEAL"

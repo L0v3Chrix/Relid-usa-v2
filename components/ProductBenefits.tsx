@@ -26,7 +26,7 @@ const ProductBenefits: React.FC = () => {
 
       {/* Featured Can Types Image */}
       <div className="max-w-4xl mx-auto mb-12">
-        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-2xl border border-white/20">
+        <div className="p-4 md:p-8">
           <img
             src="/images/can-types.png"
             alt="ReLid USA Compatible Beverage Categories - Water (blue), Coffee (brown), Energy (green), Wine/Grape (burgundy)"
