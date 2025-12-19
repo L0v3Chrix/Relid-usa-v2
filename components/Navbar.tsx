@@ -68,15 +68,15 @@ const Navbar: React.FC = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu - Fixed height to not block entire screen */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 right-0 bg-brand-black border-t border-white/10 p-6 flex flex-col gap-4 shadow-2xl h-screen">
+        <div className="lg:hidden absolute top-full left-0 right-0 bg-brand-black border-t border-white/10 p-4 sm:p-6 flex flex-col gap-2 sm:gap-3 shadow-2xl max-h-[calc(100vh-70px)] overflow-y-auto">
           {NAV_ITEMS.map((item) => (
             <a
               key={item.label}
               href={item.href}
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`text-xl font-heading font-bold py-3 border-b border-white/5 ${
+              className={`text-lg sm:text-xl font-heading font-bold py-2 sm:py-3 border-b border-white/5 ${
                 activeSection === item.href.substring(1) ? 'text-brand-green' : 'text-white'
               }`}
             >

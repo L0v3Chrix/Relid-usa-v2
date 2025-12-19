@@ -47,9 +47,9 @@ export const DURABILITY_DATA: DurabilityMetric[] = [
 ];
 
 export const TALKING_POINTS = [
-  { title: 'Freshness Retention', text: 'Maintains flavor and carbonation longer.' },
-  { title: 'On‑the‑Go Convenience', text: 'Reseal between sips without worrying about spills.' },
-  { title: 'Sustainability Impact', text: 'Supports aluminum recycling and reduces plastic waste.' },
-  { title: 'Drop‑In Compatibility', text: 'Works with existing filling lines for seamless adoption.' },
-  { title: 'Consumer Appeal', text: 'A modern upgrade that adds value instantly.' },
+  { title: 'Premium Positioning', text: 'Resealable technology justifies premium shelf placement and pricing. Give consumers a tangible reason to choose — and pay more for — your brand.' },
+  { title: 'Zero Line Modifications', text: 'ReLid integrates with your existing filling equipment. No capital expenditure. No production downtime. No extended timelines.' },
+  { title: 'Consumer-Driven Demand', text: 'Consumers actively seek resealable options. Give them what they want — before your competitors do.' },
+  { title: 'Sustainability Story', text: '100% aluminum means 100% recyclability. Eliminate plastic closures and shrink bands. A sustainability story that resonates.' },
+  { title: 'Brand Differentiation', text: 'In a sea of identical cans, resealability is an immediate visual and functional differentiator. The product consumers remember — and repurchase.' },
 ];
