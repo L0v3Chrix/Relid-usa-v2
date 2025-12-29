@@ -17,31 +17,19 @@ const FAQ: React.FC = () => {
     },
     {
       question: "What can sizes does ReLid support?",
-      answer: "ReLid currently supports 202 and 200 end sizes, covering Standard, Sleek, and Slim can formats. This includes the most popular formats for energy drinks, RTD coffee, functional beverages, water, and canned wine/spirits. Additional sizes are in development."
+      answer: "ReLid currently supports 202 and 206 Diameter in sizes: B64, CDL+, CDLE, and ISE can end formats. Additional sizes are in development."
     },
     {
       question: "How does the resealable mechanism work?",
-      answer: "The patented ReLid sliding mechanism operates in four simple steps: Start closed, lift the tab end, slide back to drink, and slide forward to reseal. It's intuitive for first-time users and durable enough for daily consumers. The mechanism has been tested across temperature extremes, drop impacts, and hundreds of open-close cycles."
+      answer: "The patented ReLid sliding mechanism operates in four simple steps: Start closed, lift the tab end, slide back to drink, and slide forward to reseal. It's intuitive for first-time users and durable enough for mobile consumers."
     },
     {
       question: "Is ReLid fully recyclable?",
-      answer: "Yes. The entire ReLid mechanism is 100% aluminum — no mixed materials, no plastic components. This means it's infinitely recyclable through standard aluminum recycling streams. ReLid eliminates the need for plastic caps, shrink bands, and secondary closures, strengthening your brand's sustainability story."
-    },
-    {
-      question: "Where is ReLid manufactured?",
-      answer: "ReLid USA is manufactured in Saint Charles, Illinois. We bring proven European resealable technology to the American market with U.S.-based production, ensuring supply chain reliability and enterprise-scale capacity for American brands."
-    },
-    {
-      question: "How does ReLid maintain carbonation and freshness?",
-      answer: "ReLid's airtight reseal mechanism is engineered to maintain seal integrity through carbonation pressure, temperature fluctuations, and repeated open-close cycles. The precision seal protects product freshness, flavor, and carbonation between uses — delivering the quality experience your customers expect."
+      answer: "Yes. The entire ReLid mechanism is 100% aluminum — no mixed materials, no plastic components. This means it's infinitely recyclable through standard aluminum recycling streams."
     },
     {
       question: "What beverage categories work with ReLid?",
       answer: "ReLid works across all major beverage categories including water and functional drinks, RTD coffee, energy and performance beverages, and wine and spirits. Any brand looking for premium positioning through resealable packaging can benefit from ReLid technology."
-    },
-    {
-      question: "How durable is the ReLid mechanism?",
-      answer: "ReLid is built for real-world performance. The mechanism is scratch-resistant, pressure-tested for carbonated beverages, drop-impact ready, and stable across temperature extremes from refrigerated retail to hot car interiors. It maintains smooth operation and airtight seal through the entire product lifecycle."
     },
     {
       question: "What's the process to get started with ReLid?",

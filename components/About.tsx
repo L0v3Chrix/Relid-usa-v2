@@ -1,6 +1,9 @@
 import React from 'react';
 import Section from './ui/Section';
 
+// Factory image path - updated with new client-provided photo (Dec 2025)
+const FACTORY_IMAGE_PATH = '/images/new-factory-final.jpeg';
+
 const About: React.FC = () => {
   return (
     <Section id="about" className="bg-brand-black border-t border-white/10">
@@ -8,7 +11,7 @@ const About: React.FC = () => {
         <div className="order-2 lg:order-1 relative">
           <div className="rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 relative group">
             <img
-              src="/images/Re-lid-factory-final.png"
+              src={FACTORY_IMAGE_PATH}
               alt="ReLid USA Manufacturing Facility - Real factory floor with RE→LID USA banner, workers, and conveyor line producing resealable aluminum can lids"
               className="w-full h-auto"
             />
@@ -25,7 +28,7 @@ const About: React.FC = () => {
 
           <div className="text-brand-gray space-y-4 sm:space-y-6 text-base sm:text-lg leading-relaxed">
             <p>
-              ReLid USA brings a decade of European resealable technology leadership to the American market. We're not just a supplier — we're a strategic partner invested in your success from first sample to full-scale production.
+              ReLid USA brings a decade of resealable technology leadership to the American market. We're not just a supplier — we're a strategic partner invested in your success from first sample to full-scale production.
             </p>
             <p>
               With U.S.-based manufacturing in Saint Charles, Illinois, we deliver the supply chain reliability American brands demand. Our production capacity is built for enterprise scale, with dedicated support teams ready to guide your integration.

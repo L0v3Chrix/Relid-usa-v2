@@ -6,17 +6,17 @@ const Sizes: React.FC = () => {
     {
       name: 'Standard',
       subtitle: 'The Workhorse Format',
-      desc: "America's most popular can size. Perfect for mass-market beverages, functional drinks, and mainstream energy."
+      desc: "America's most popular can sizes, perfect for mass market beverage, functional drinks, and mainstream energy."
     },
     {
       name: 'Sleek',
       subtitle: 'Premium Positioning',
-      desc: 'The sleek format signals quality. Ideal for craft beverages, premium RTD coffee, and upscale retail placement.'
+      desc: 'Ideal for RTD cocktails, premium water, and upscale retail replacement.'
     },
     {
-      name: 'Slim',
+      name: '24 Ounce',
       subtitle: 'Built for Performance',
-      desc: 'The go-to format for energy, performance, and functional shot beverages. High velocity, high margin.'
+      desc: 'The go-to format for RTDs, energy, beer, and hydration beverages.'
     },
   ];
 
@@ -33,7 +33,7 @@ const Sizes: React.FC = () => {
           </p>
         </div>
         <div className="bg-brand-green px-4 sm:px-6 py-2 sm:py-3 rounded text-brand-black font-bold text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
-          202 & 200 End Sizes
+          202 & 206 End Sizes
         </div>
       </div>
 

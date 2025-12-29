@@ -1,13 +1,13 @@
 import React from 'react';
 import Section from './ui/Section';
-import { Hammer, Thermometer, Shield, Lock, Zap } from 'lucide-react';
+import { Hammer, Shield, Lock, Zap } from 'lucide-react';
 
 const Durability: React.FC = () => {
   const techPoints = [
     {
       icon: Shield,
       title: 'Shelf-Ready Durability',
-      desc: 'Premium-grade aluminum resists scratches through distribution, retail handling, and consumer use. Your branding stays pristine.'
+      desc: 'ReLid with aluminum cans creates lower logistical costs compared to bottles.'
     },
     {
       icon: Zap,
@@ -18,11 +18,6 @@ const Durability: React.FC = () => {
       icon: Hammer,
       title: 'Built for Distribution',
       desc: 'Our mechanism maintains seal integrity through shipping, retail stocking, and consumer handling. No leaks. No failures.'
-    },
-    {
-      icon: Thermometer,
-      title: 'Temperature Extremes',
-      desc: 'From refrigerated retail to hot car interiors, ReLid maintains smooth operation and airtight seal across temperature swings.'
     },
     {
       icon: Lock,
@@ -38,7 +33,7 @@ const Durability: React.FC = () => {
       <div className="relative z-10 grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-start">
         <div>
           <span className="text-brand-green font-bold tracking-widest uppercase mb-2 block border-b-2 border-brand-green w-fit pb-1 text-xs sm:text-sm">
-            American-Made | European-Engineered
+            American-Made
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-heading font-bold text-white mb-4 sm:mb-6">
             Performance You Can <br className="hidden sm:block"/>
@@ -83,9 +78,6 @@ const Durability: React.FC = () => {
             </div>
           </div>
 
-          <div className="text-center pt-2 sm:pt-4">
-            <p className="text-white font-bold text-base sm:text-lg">"European precision. American production. Uncompromising quality."</p>
-          </div>
         </div>
       </div>
     </Section>

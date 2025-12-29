@@ -36,7 +36,7 @@ const Hero: React.FC = () => {
           </h2>
 
           <p className="text-sm sm:text-base text-white/90 border-l-4 border-brand-green pl-4 sm:pl-6 py-2 bg-brand-black/30 backdrop-blur-sm rounded-r-lg">
-            Proven in Europe. Perfected for America. ReLid's patented sliding mechanism delivers the resealability consumers demand while giving brands the premium differentiation they need to capture new market share.
+            ReLid's patented sliding mechanism delivers the resealability consumers demand while giving brands the premium differentiation they need to capture new market share.
           </p>
 
           {/* Credibility Bar */}
@@ -44,10 +44,6 @@ const Hero: React.FC = () => {
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-brand-green rounded-full"></span>
               Made in USA
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-brand-green rounded-full"></span>
-              European Heritage
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-brand-green rounded-full"></span>
