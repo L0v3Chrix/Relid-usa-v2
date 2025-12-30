@@ -56,22 +56,22 @@ const Durability: React.FC = () => {
           </div>
         </div>
 
-        <div className="space-y-6 sm:space-y-8 mt-4 lg:mt-0">
+        <div className="space-y-6 sm:space-y-8 mt-4 lg:mt-0 max-w-sm mx-auto lg:max-w-none">
           {/* ReLid USA Branded Can */}
-          <div className="p-2 sm:p-4 flex justify-center">
+          <div className="bg-white/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-sm">
             <img
-              src="/images/branded-relid-can.jpeg"
+              src="/images/branded-relid-can.png"
               alt="ReLid USA Premium Aluminum Can with Resealable Sliding Lid Technology"
-              className="w-auto h-auto max-h-[280px] sm:max-h-[350px] md:max-h-[400px] drop-shadow-2xl"
+              className="w-full max-w-[200px] sm:max-w-[240px] mx-auto h-auto drop-shadow-2xl"
             />
           </div>
 
           {/* USA Product Image */}
-          <div className="bg-white/5 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-sm">
+          <div className="bg-white/5 p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-white/10 backdrop-blur-sm">
             <img
               src="/images/usa-relid.png"
               alt="ReLid USA Premium Matte Black Lid with American Flag Tab Design"
-              className="w-full max-w-xs mx-auto h-auto rounded-lg sm:rounded-xl"
+              className="w-full max-w-[200px] sm:max-w-[240px] mx-auto h-auto rounded-lg sm:rounded-xl"
             />
             <div className="mt-3 sm:mt-4 text-center">
               <span className="bg-brand-green text-brand-black font-bold px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm uppercase tracking-wider">Made in USA</span>
