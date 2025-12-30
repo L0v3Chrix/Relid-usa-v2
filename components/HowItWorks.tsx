@@ -36,10 +36,7 @@ const HowItWorks: React.FC = () => {
         {/* Supporting Text */}
         <div className="mt-6 sm:mt-8 space-y-4 max-w-2xl mx-auto text-center">
           <p className="text-brand-gray text-base sm:text-lg">
-            The patented ReLid sliding mechanism operates with smooth, confident precision. Lift the tab, slide to drink, slide to reseal. Intuitive for first-time users, durable for daily consumers.
-          </p>
-          <p className="text-white/60 text-sm sm:text-base font-medium">
-            Tested across temperature extremes, drop impacts, and repeated open-close cycles to exceed real-world performance demands.
+            The patented ReLid sliding mechanism operates with smooth, confident precision. Lift the tab, slide to drink, slide to reseal. Intuitive for first-time users, durable for mobile consumers.
           </p>
         </div>
       </div>

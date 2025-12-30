@@ -38,7 +38,7 @@ const About: React.FC = () => {
           <div className="grid grid-cols-1 gap-3 sm:gap-4 pt-2 sm:pt-4">
             <div className="pl-3 sm:pl-4 border-l-2 border-brand-green">
               <span className="block text-base sm:text-lg md:text-xl font-bold text-white mb-0.5 sm:mb-1">Proven Technology. Localized Production.</span>
-              <span className="text-xs sm:text-sm text-brand-gray">European market validation meets American manufacturing infrastructure.</span>
+              <span className="text-xs sm:text-sm text-brand-gray">American manufacturing infrastructure built for enterprise scale.</span>
             </div>
             <div className="pl-3 sm:pl-4 border-l-2 border-brand-green">
               <span className="block text-base sm:text-lg md:text-xl font-bold text-white mb-0.5 sm:mb-1">Built for Enterprise Scale</span>
