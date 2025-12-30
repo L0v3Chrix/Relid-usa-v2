@@ -1,27 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Section from './ui/Section';
 import Button from './ui/Button';
 
+const BASIN_ENDPOINT = 'https://usebasin.com/f/68bdd43c17ac';
+
 const Contact: React.FC = () => {
-  const [formState, setFormState] = useState({
-    name: '',
-    company: '',
-    email: '',
-    message: ''
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormState({
-      ...formState,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('Thank you. Our team will reach out within 24 hours to schedule your consultation.');
-  };
-
   return (
     <Section id="contact" className="bg-brand-black border-t border-white/10">
       <div className="max-w-3xl mx-auto">
@@ -57,7 +40,7 @@ const Contact: React.FC = () => {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-brand-black p-4 sm:p-6 md:p-8 lg:p-10 rounded-xl border border-white/10 shadow-2xl space-y-4 sm:space-y-6">
+        <form action={BASIN_ENDPOINT} method="POST" className="bg-brand-black p-4 sm:p-6 md:p-8 lg:p-10 rounded-xl border border-white/10 shadow-2xl space-y-4 sm:space-y-6">
           <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-1.5 sm:space-y-2">
               <label className="text-xs sm:text-sm font-bold text-brand-gray uppercase tracking-wider" htmlFor="name">Name</label>
@@ -65,8 +48,6 @@ const Contact: React.FC = () => {
                 type="text"
                 id="name"
                 name="name"
-                value={formState.name}
-                onChange={handleChange}
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-none p-3 sm:p-4 text-white text-sm sm:text-base focus:border-brand-green focus:outline-none transition-colors placeholder-white/20"
               />
@@ -77,8 +58,6 @@ const Contact: React.FC = () => {
                 type="text"
                 id="company"
                 name="company"
-                value={formState.company}
-                onChange={handleChange}
                 required
                 className="w-full bg-white/5 border border-white/10 rounded-none p-3 sm:p-4 text-white text-sm sm:text-base focus:border-brand-green focus:outline-none transition-colors placeholder-white/20"
               />
@@ -91,8 +70,6 @@ const Contact: React.FC = () => {
               type="email"
               id="email"
               name="email"
-              value={formState.email}
-              onChange={handleChange}
               required
               className="w-full bg-white/5 border border-white/10 rounded-none p-3 sm:p-4 text-white text-sm sm:text-base focus:border-brand-green focus:outline-none transition-colors placeholder-white/20"
             />
@@ -104,8 +81,6 @@ const Contact: React.FC = () => {
               id="message"
               name="message"
               rows={4}
-              value={formState.message}
-              onChange={handleChange}
               required
               placeholder="Tell us about your project, volume requirements, and timeline..."
               className="w-full bg-white/5 border border-white/10 rounded-none p-3 sm:p-4 text-white text-sm sm:text-base focus:border-brand-green focus:outline-none transition-colors placeholder-white/30"
