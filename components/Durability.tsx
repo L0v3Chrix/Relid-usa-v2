@@ -60,7 +60,7 @@ const Durability: React.FC = () => {
           {/* ReLid USA Branded Can */}
           <div className="p-2 sm:p-4 flex justify-center">
             <img
-              src="/images/relid-can.png"
+              src="/images/branded-relid-can.jpeg"
               alt="ReLid USA Premium Aluminum Can with Resealable Sliding Lid Technology"
               className="w-auto h-auto max-h-[280px] sm:max-h-[350px] md:max-h-[400px] drop-shadow-2xl"
             />
