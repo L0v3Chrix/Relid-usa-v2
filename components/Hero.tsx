@@ -16,7 +16,7 @@ const Hero: React.FC = () => {
           <source src="/images/relid-video.mp4" type="video/mp4" />
         </video>
         {/* Video Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-brand-black/90 via-brand-black/70 to-brand-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-black/90 via-brand-black/70 to-brand-black/50 pointer-events-none"></div>
       </div>
 
       {/* Content Container */}
@@ -75,7 +75,7 @@ const Hero: React.FC = () => {
       </a>
 
       {/* Bottom Gradient Fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-brand-black to-transparent z-10"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-brand-black to-transparent z-10 pointer-events-none"></div>
     </section>
   );
 };
