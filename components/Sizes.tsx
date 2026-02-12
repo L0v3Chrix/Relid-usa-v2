@@ -42,7 +42,7 @@ const Sizes: React.FC = () => {
         <div className="p-2 sm:p-4 md:p-8">
           <img
             src="/images/can-sizes.png"
-            alt="ReLid USA Available Can Sizes - Standard (traditional 12oz), Sleek (taller slim design), Tall Boy (16/24oz large format)"
+            alt="ReLid USA Available Can Sizes - Standard (traditional 12oz), Sleek (taller slim design), Jumbo (16/24oz large format)"
             className="w-full h-auto"
           />
         </div>
