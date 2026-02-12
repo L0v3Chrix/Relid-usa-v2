@@ -49,6 +49,6 @@ export const TALKING_POINTS = [
   { title: 'Premium Positioning', text: 'Resealable technology justifies premium shelf placement and pricing. Give consumers a tangible reason to choose — and pay more for — your brand.' },
   { title: 'Zero Line Modifications', text: 'ReLid integrates with your existing filling equipment. No capital expenditure. No production downtime. No extended timelines.' },
   { title: 'Consumer-Driven Demand', text: 'Consumers actively seek resealable options. Give them what they want — before your competitors do.' },
-  { title: 'Sustainability Story', text: '100% aluminum means infinite recyclability. Eliminate plastic closures and shrink bands to reduce single-use plastic waste.' },
+  { title: 'Sustainability Story', text: '100% aluminum means a closed-loop recycling ecosystem. Reduces single-use plastic waste.' },
   { title: 'Brand Differentiation', text: 'In a sea of identical cans, resealability is an immediate visual and functional differentiator. The product consumers remember — and repurchase.' },
 ];

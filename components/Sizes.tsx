@@ -14,8 +14,8 @@ const Sizes: React.FC = () => {
       desc: 'Ideal for RTD cocktails, premium water, and upscale retail replacement.'
     },
     {
-      name: '24 Ounce',
-      subtitle: 'Built for Performance',
+      name: 'Large',
+      subtitle: '16/24 Ounce Formats',
       desc: 'The go-to format for RTDs, energy, beer, and hydration beverages.'
     },
   ];
@@ -32,7 +32,7 @@ const Sizes: React.FC = () => {
             ReLid fits the can formats you're already running — no tooling changes, no line disruptions, no delays to market.
           </p>
         </div>
-        <div className="bg-brand-green px-4 sm:px-6 py-2 sm:py-3 rounded text-brand-black font-bold text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
+        <div className="bg-brand-green/20 border border-brand-green/40 px-4 sm:px-6 py-2 sm:py-3 rounded text-brand-green font-bold text-xs sm:text-sm uppercase tracking-wide whitespace-nowrap">
           202 & 206 End Sizes
         </div>
       </div>
@@ -42,7 +42,7 @@ const Sizes: React.FC = () => {
         <div className="p-2 sm:p-4 md:p-8">
           <img
             src="/images/can-sizes.png"
-            alt="ReLid USA Available Can Sizes - STANDARD (traditional 12oz), SLEEK (taller slim design), SLIM (tallest energy drink format)"
+            alt="ReLid USA Available Can Sizes - STANDARD (traditional 12oz), SLEEK (taller slim design), LARGE (16/24oz format)"
             className="w-full h-auto"
           />
         </div>

@@ -9,7 +9,7 @@ const HowItWorks: React.FC = () => {
           Engineered for <span className="text-brand-green">Repeat Performance</span>
         </h2>
         <p className="text-brand-gray text-base sm:text-lg font-medium max-w-2xl mx-auto">
-          A precision mechanism your customers will use — and appreciate — again and again.
+          A precision mechanism your customers will use — and appreciate — every time they reach for your brand.
         </p>
       </div>
 

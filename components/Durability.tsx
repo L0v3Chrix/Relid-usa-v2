@@ -12,7 +12,7 @@ const Durability: React.FC = () => {
     {
       icon: Zap,
       title: 'Carbonation Integrity',
-      desc: 'Engineered to maintain seal integrity through carbonation pressure, temperature fluctuations, and hundreds of open-close cycles.'
+      desc: 'Engineered to maintain seal integrity through carbonation pressure, temperature fluctuations, and multiple open-close cycles.'
     },
     {
       icon: Hammer,

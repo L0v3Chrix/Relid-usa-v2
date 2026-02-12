@@ -16,7 +16,7 @@ const About: React.FC = () => {
               className="w-full h-auto"
             />
             <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 bg-brand-green text-brand-black text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 uppercase rounded">
-              Saint Charles, IL
+              Made in USA
             </div>
           </div>
         </div>
@@ -31,7 +31,7 @@ const About: React.FC = () => {
               ReLid USA brings a decade of resealable technology leadership to the American market. We're not just a supplier — we're a strategic partner invested in your success from first sample to full-scale production.
             </p>
             <p>
-              With U.S.-based manufacturing in Saint Charles, Illinois, we deliver the supply chain reliability American brands demand. Our production capacity is built for enterprise scale, with dedicated support teams ready to guide your integration.
+              With U.S.-based manufacturing, we deliver the supply chain reliability American brands demand. Our production capacity is built for enterprise scale, with dedicated support teams ready to guide your integration.
             </p>
           </div>
 
@@ -42,7 +42,7 @@ const About: React.FC = () => {
             </div>
             <div className="pl-3 sm:pl-4 border-l-2 border-brand-green">
               <span className="block text-base sm:text-lg md:text-xl font-bold text-white mb-0.5 sm:mb-1">Built for Enterprise Scale</span>
-              <span className="text-xs sm:text-sm text-brand-gray">Production infrastructure designed for emerging brands and major CPG players alike.</span>
+              <span className="text-xs sm:text-sm text-brand-gray">Production infrastructure designed for emerging brands and major beverage brands alike.</span>
             </div>
             <div className="pl-3 sm:pl-4 border-l-2 border-brand-green">
               <span className="block text-base sm:text-lg md:text-xl font-bold text-white mb-0.5 sm:mb-1">White-Glove Integration Support</span>

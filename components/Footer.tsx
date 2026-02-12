@@ -22,8 +22,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="pt-6 sm:pt-8 opacity-40 font-light text-xs sm:text-sm">
-          <p className="mb-1 sm:mb-2">ReLid USA © 2025 • All Rights Reserved</p>
-          <p>Saint Charles, IL, USA</p>
+          <p>ReLid USA © 2026 • All Rights Reserved</p>
         </div>
       </div>
     </footer>
