@@ -14,7 +14,7 @@ const Sizes: React.FC = () => {
       desc: 'Ideal for RTD cocktails, premium water, and upscale retail replacement.'
     },
     {
-      name: 'Large',
+      name: 'Jumbo',
       subtitle: '16/24 Ounce Formats',
       desc: 'The go-to format for RTDs, energy, beer, and hydration beverages.'
     },
@@ -39,7 +39,7 @@ const Sizes: React.FC = () => {
 
       {/* Real Can Sizes Image */}
       <div className="max-w-4xl mx-auto">
-        <div className="p-2 sm:p-4 md:p-8">
+        <div className="p-0">
           <img
             src="/images/can-sizes.png"
             alt="ReLid USA Available Can Sizes - Standard (traditional 12oz), Sleek (taller slim design), Jumbo (16/24oz large format)"
@@ -48,7 +48,7 @@ const Sizes: React.FC = () => {
         </div>
 
         {/* Size Descriptions - FIXED: Mobile responsive grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-8 sm:mt-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-4 sm:mt-6">
           {sizes.map((size) => (
             <div key={size.name} className="text-center p-4 bg-white/5 rounded-xl border border-white/10 sm:bg-transparent sm:border-0 sm:p-0">
               <h3 className="text-lg sm:text-xl font-heading font-bold mb-1 text-white">{size.name}</h3>
