@@ -47,13 +47,13 @@ const Sizes: React.FC = () => {
           />
         </div>
 
-        {/* Size Descriptions - FIXED: Mobile responsive grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-4 sm:mt-6">
+        {/* Size Descriptions — aligned under image labels */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 mt-2 sm:mt-3">
           {sizes.map((size) => (
             <div key={size.name} className="text-center p-4 bg-white/5 rounded-xl border border-white/10 sm:bg-transparent sm:border-0 sm:p-0">
-              <h3 className="text-lg sm:text-xl font-heading font-bold mb-1 text-white">{size.name}</h3>
-              <p className="text-brand-green font-semibold text-sm mb-2">{size.subtitle}</p>
-              <p className="text-xs sm:text-sm text-brand-gray">{size.desc}</p>
+              <h3 className="text-lg font-heading font-bold mb-1 text-white sm:hidden">{size.name}</h3>
+              <p className="text-brand-green font-semibold text-sm mb-1.5">{size.subtitle}</p>
+              <p className="text-xs sm:text-sm text-brand-gray leading-relaxed">{size.desc}</p>
             </div>
           ))}
         </div>
