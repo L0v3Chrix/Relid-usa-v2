@@ -10,8 +10,13 @@ import About from './components/About';
 import Contact from './components/Contact';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
+import AdminApp from './components/admin/AdminApp';
 
 function App() {
+  if (window.location.pathname.startsWith('/admin')) {
+    return <AdminApp />;
+  }
+
   return (
     <div className="font-sans antialiased text-white selection:bg-brand-green selection:text-brand-black">
       <Navbar />
