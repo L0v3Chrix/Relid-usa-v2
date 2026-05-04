@@ -170,7 +170,7 @@ function sortLeads(leads: Lead[]): Lead[] {
 
 async function getLeadsViaAppsScript(): Promise<{ leads: Lead[]; refreshedAt: string; source: SheetSource }> {
   const webappUrl = requiredEnv('APPS_SCRIPT_WEBAPP_URL');
-  const token = requiredEnv('BASIN_WEBHOOK_TOKEN');
+  const token = requiredEnv('BASIN_WEBHOOK_TOKEN').trim();
   const response = await fetch(webappUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
