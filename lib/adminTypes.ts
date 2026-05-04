@@ -59,5 +59,5 @@ export interface Lead {
 export interface LeadsResponse {
   leads: Lead[];
   refreshedAt: string;
-  source: 'google-sheet' | 'mock';
+  source: 'google-sheet' | 'apps-script-bridge' | 'mock';
 }

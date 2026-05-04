@@ -5,7 +5,7 @@ const LEADS_COLUMNS = [
   'received_at','basin_submission_id','dedupe_key','status','status_reason','first_name','last_name','email','phone','company','title','website','message','source_page','utm_source','utm_medium','utm_campaign','raw_submission_json','email_domain','researched_company_name','researched_website','company_summary','beverage_category','lead_type','fit_score','priority','qualification_notes','buying_signals','concerns_or_risks','recommended_next_step','assigned_owner','assigned_inbox','draft_subject','draft_body','draft_rationale','source_urls_json','openai_response_id','processed_at','error_message','create_gmail_draft','gmail_draft_id'
 ];
 
-type SheetSource = 'google-sheet' | 'mock';
+type SheetSource = 'google-sheet' | 'apps-script-bridge' | 'mock';
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -168,6 +168,32 @@ function sortLeads(leads: Lead[]): Lead[] {
   });
 }
 
+async function getLeadsViaAppsScript(): Promise<{ leads: Lead[]; refreshedAt: string; source: SheetSource }> {
+  const webappUrl = requiredEnv('APPS_SCRIPT_WEBAPP_URL');
+  const token = requiredEnv('BASIN_WEBHOOK_TOKEN');
+  const response = await fetch(webappUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'runner_snapshot', token }),
+  });
+  const text = await response.text();
+  if (!response.ok) throw new Error(`Apps Script bridge failed: ${response.status} ${text}`);
+  const data = JSON.parse(text) as { success?: boolean; headers?: string[]; leads?: Record<string, unknown>[]; error?: string };
+  if (!data.success) throw new Error(`Apps Script bridge error: ${data.error || text}`);
+  const headers = data.headers && data.headers.length ? data.headers : LEADS_COLUMNS;
+  const leads = sortLeads((data.leads || []).map((record, index) => {
+    const row = headers.map((header) => {
+      const value = record[header];
+      if (value === undefined || value === null) return '';
+      if (typeof value === 'object') return JSON.stringify(value);
+      return String(value);
+    });
+    const sheetRow = Number(record._row_number || index + 2);
+    return rowToLead(headers, row, sheetRow - 2);
+  }));
+  return { leads, refreshedAt: new Date().toISOString(), source: 'apps-script-bridge' };
+}
+
 function mockLeads(): Lead[] {
   return sortLeads([
     rowToLead(LEADS_COLUMNS, [
@@ -182,6 +208,7 @@ function mockLeads(): Lead[] {
 export async function getLeads(): Promise<{ leads: Lead[]; refreshedAt: string; source: SheetSource }> {
   const useMock = process.env.USE_MOCK_LEADS === 'true' || (!process.env.GOOGLE_SHEET_ID && process.env.NODE_ENV !== 'production');
   if (useMock) return { leads: mockLeads(), refreshedAt: new Date().toISOString(), source: 'mock' };
+  if (process.env.APPS_SCRIPT_WEBAPP_URL && process.env.BASIN_WEBHOOK_TOKEN) return getLeadsViaAppsScript();
   const sheetId = requiredEnv('GOOGLE_SHEET_ID');
   const tab = process.env.GOOGLE_SHEETS_LEADS_TAB || 'Leads';
   const token = await getAccessToken();
