@@ -174,7 +174,7 @@ async function getLeadsViaAppsScript(): Promise<{ leads: Lead[]; refreshedAt: st
   const response = await fetch(webappUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'runner_snapshot', token }),
+    body: JSON.stringify({ action: 'runner_dashboard_leads', token }),
   });
   const text = await response.text();
   if (!response.ok) throw new Error(`Apps Script bridge failed: ${response.status} ${text}`);
