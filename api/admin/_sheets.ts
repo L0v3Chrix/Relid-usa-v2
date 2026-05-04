@@ -13,8 +13,38 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-function normalizePrivateKey(key: string): string {
-  return key.replace(/\\n/g, '\n');
+function normalizePrivateKey(rawKey: string): string {
+  let key = rawKey.trim();
+
+  // Support pasting either the raw PEM, a JSON-escaped PEM string, a full
+  // service-account JSON object, or a base64-encoded PEM into Vercel env vars.
+  try {
+    const parsed = JSON.parse(key) as unknown;
+    if (typeof parsed === 'string') key = parsed;
+    if (parsed && typeof parsed === 'object' && 'private_key' in parsed) {
+      const privateKey = (parsed as { private_key?: unknown }).private_key;
+      if (typeof privateKey === 'string') key = privateKey;
+    }
+  } catch {
+    // Not JSON; keep normalizing below.
+  }
+
+  key = key.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n');
+
+  if (!key.includes('BEGIN PRIVATE KEY')) {
+    try {
+      const decoded = Buffer.from(key, 'base64').toString('utf8').trim();
+      if (decoded.includes('BEGIN PRIVATE KEY')) key = decoded;
+    } catch {
+      // Not base64; validation below will surface a useful message.
+    }
+  }
+
+  if (!key.includes('BEGIN PRIVATE KEY')) {
+    throw new Error('GOOGLE_SHEETS_PRIVATE_KEY is not a valid PEM private key');
+  }
+
+  return key;
 }
 
 function base64url(input: string | Buffer): string {
