@@ -14,6 +14,30 @@ const PIPELINE_UPDATE_FIELDS = [
 ] as const;
 
 type SheetSource = 'google-sheet' | 'apps-script-bridge' | 'mock';
+type LeadsResult = { leads: Lead[]; refreshedAt: string; lastDataUpdatedAt: string; source: SheetSource };
+type LeadResult = { lead: Lead | null; refreshedAt: string; lastDataUpdatedAt: string; source: SheetSource };
+
+function latestTimestampFromLeads(leads: Lead[]): string {
+  const fields: Array<keyof Lead> = [
+    'processed_at',
+    'disposition_updated_at',
+    'last_human_action_at',
+    'last_contacted_at',
+    'replied_at',
+    'call_scheduled_at',
+    'received_at',
+  ];
+  let latest = 0;
+  for (const lead of leads) {
+    for (const field of fields) {
+      const value = lead[field];
+      if (typeof value !== 'string' || !value) continue;
+      const parsed = Date.parse(value);
+      if (Number.isFinite(parsed) && parsed > latest) latest = parsed;
+    }
+  }
+  return latest ? new Date(latest).toISOString() : '';
+}
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -228,7 +252,7 @@ function sortLeads(leads: Lead[]): Lead[] {
   });
 }
 
-async function getLeadsViaAppsScript(): Promise<{ leads: Lead[]; refreshedAt: string; source: SheetSource }> {
+async function getLeadsViaAppsScript(): Promise<LeadsResult> {
   const webappUrl = requiredEnv('APPS_SCRIPT_WEBAPP_URL');
   const token = requiredEnv('BASIN_WEBHOOK_TOKEN').trim();
   const response = await fetch(webappUrl, {
@@ -251,7 +275,7 @@ async function getLeadsViaAppsScript(): Promise<{ leads: Lead[]; refreshedAt: st
     const sheetRow = Number(record._row_number || index + 2);
     return rowToLead(headers, row, sheetRow - 2);
   }));
-  return { leads, refreshedAt: new Date().toISOString(), source: 'apps-script-bridge' };
+  return { leads, refreshedAt: new Date().toISOString(), lastDataUpdatedAt: latestTimestampFromLeads(leads), source: 'apps-script-bridge' };
 }
 
 function mockLeads(): Lead[] {
@@ -265,9 +289,12 @@ function mockLeads(): Lead[] {
   ]);
 }
 
-export async function getLeads(): Promise<{ leads: Lead[]; refreshedAt: string; source: SheetSource }> {
+export async function getLeads(): Promise<LeadsResult> {
   const useMock = process.env.USE_MOCK_LEADS === 'true' || (!process.env.GOOGLE_SHEET_ID && process.env.NODE_ENV !== 'production');
-  if (useMock) return { leads: mockLeads(), refreshedAt: new Date().toISOString(), source: 'mock' };
+  if (useMock) {
+    const leads = mockLeads();
+    return { leads, refreshedAt: new Date().toISOString(), lastDataUpdatedAt: latestTimestampFromLeads(leads), source: 'mock' };
+  }
   if (process.env.APPS_SCRIPT_WEBAPP_URL && process.env.BASIN_WEBHOOK_TOKEN) return getLeadsViaAppsScript();
   const sheetId = requiredEnv('GOOGLE_SHEET_ID');
   const tab = process.env.GOOGLE_SHEETS_LEADS_TAB || 'Leads';
@@ -280,14 +307,14 @@ export async function getLeads(): Promise<{ leads: Lead[]; refreshedAt: string; 
   const data = await response.json() as { values?: string[][] };
   const [headers = LEADS_COLUMNS, ...rows] = data.values || [];
   const leads = sortLeads(rows.map((row, index) => rowToLead(headers, row, index)));
-  return { leads, refreshedAt: new Date().toISOString(), source: 'google-sheet' };
+  return { leads, refreshedAt: new Date().toISOString(), lastDataUpdatedAt: latestTimestampFromLeads(leads), source: 'google-sheet' };
 }
 
-export async function getLeadById(id: string): Promise<{ lead: Lead | null; refreshedAt: string; source: SheetSource }> {
-  const { leads, refreshedAt, source } = await getLeads();
+export async function getLeadById(id: string): Promise<LeadResult> {
+  const { leads, refreshedAt, lastDataUpdatedAt, source } = await getLeads();
   const decoded = decodeURIComponent(id);
   const lead = leads.find((item) => item.id === id || decodeURIComponent(item.id) === decoded || String(item.rowNumber) === decoded) || null;
-  return { lead, refreshedAt, source };
+  return { lead, refreshedAt, lastDataUpdatedAt, source };
 }
 
 type DispositionUpdateInput = {
@@ -345,7 +372,7 @@ async function postAppsScriptBridge(body: Record<string, unknown>): Promise<Reco
   return data;
 }
 
-export async function updateLeadDisposition(id: string, input: DispositionUpdateInput): Promise<{ lead: Lead | null; refreshedAt: string; source: SheetSource }> {
+export async function updateLeadDisposition(id: string, input: DispositionUpdateInput): Promise<LeadResult> {
   if (!ALLOWED_DISPOSITIONS.includes(input.disposition as typeof ALLOWED_DISPOSITIONS[number])) {
     throw new Error('Invalid disposition');
   }

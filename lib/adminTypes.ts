@@ -117,5 +117,6 @@ export interface Lead {
 export interface LeadsResponse {
   leads: Lead[];
   refreshedAt: string;
+  lastDataUpdatedAt: string;
   source: 'google-sheet' | 'apps-script-bridge' | 'mock';
 }

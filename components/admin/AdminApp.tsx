@@ -98,7 +98,7 @@ function renderJsonSummary(value: unknown) {
 }
 
 async function updateDispositionApi(id: string, payload: Record<string, string>) {
-  return api<{ lead: Lead; refreshedAt: string; source: string }>(`/api/admin/leads/${id}/disposition`, { method: 'POST', body: JSON.stringify(payload) });
+  return api<{ lead: Lead; refreshedAt: string; lastDataUpdatedAt: string; source: string }>(`/api/admin/leads/${id}/disposition`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 function badge(value?: string) {
@@ -137,7 +137,7 @@ function localMockResponse(): LeadsResponse {
     id: 'mock-001', rowNumber: 2, received_at: '2026-05-04T14:05:00-05:00', basin_submission_id: 'mock-001', dedupe_key: 'mock:001', status: 'DRAFT_READY', status_reason: 'Processed by local Hermes runner', first_name: 'Jordan', last_name: 'Reed', email: 'jordan@northstarcoldbrew.com', phone: '312-555-0198', company: 'Northstar Cold Brew Co', title: 'Founder', website: 'https://northstarcoldbrew.com', message: 'We are preparing a canned cold brew launch and want to understand whether Re:Lid resealable aluminum can technology could work for RTD coffee and on-the-go retail.', source_page: 'https://relidusa.com/contact', utm_source: 'organic', utm_medium: '', utm_campaign: 'launch', raw_submission_json: {}, email_domain: 'northstarcoldbrew.com', researched_company_name: 'Northstar Cold Brew Co', researched_website: 'https://northstarcoldbrew.com', company_summary: 'Regional cold brew brand preparing a canned RTD expansion for retail and convenience channels.', beverage_category: 'RTD coffee', lead_type: 'brand', fit_score: 88, priority: 'HOT', qualification_notes: 'Strong fit: beverage brand, canned launch, packaging innovation interest, business domain.', buying_signals: ['Canned RTD launch', 'Asked about resealable aluminum can technology', 'Retail/on-the-go use case'], concerns_or_risks: ['Needs real volume and filler details before technical claims'], recommended_next_step: 'Schedule a qualification call; ask can size, fill method, launch timing, estimated volume, and co-packer/filler.', assigned_owner: 'Re:Lid Sales', assigned_inbox: 'sales@relidusa.com', draft_subject: 'Re:Lid USA follow-up for Northstar Cold Brew', draft_body: 'Hi Jordan,\n\nThanks for reaching out to Re:Lid USA. A canned cold brew launch is exactly the kind of on-the-go beverage use case where resealable aluminum can technology may create a better consumer experience.\n\nTo point you in the right direction, could you share your target can size, fill method, launch timing, estimated volume, current co-packer/filler, and who will be involved in the packaging decision?\n\nIf helpful, we can set up a short intro call.\n\nRe:Lid USA Team', draft_rationale: 'Lead is relevant and the draft asks for practical qualification details without overpromising.', source_urls: ['https://northstarcoldbrew.com'], openai_response_id: '', processed_at: now, error_message: '', create_gmail_draft: 'FALSE', gmail_draft_id: ''
   } satisfies Lead;
   const second = { ...base, id: 'mock-002', rowNumber: 3, basin_submission_id: 'mock-002', dedupe_key: 'mock:002', status: 'NEEDS_REVIEW', first_name: 'Taylor', last_name: 'Kim', email: 'taylor@evergreenfilling.com', company: 'Evergreen Filling Partners', title: 'Packaging Innovation Manager', researched_company_name: 'Evergreen Filling Partners', beverage_category: 'Sparkling water / RTD tea', lead_type: 'co_packer', fit_score: 79, priority: 'WARM', draft_subject: 'Re:Lid USA qualification questions for Evergreen Filling' } satisfies Lead;
-  return { leads: [base, second], refreshedAt: now, source: 'mock' };
+  return { leads: [base, second], refreshedAt: now, lastDataUpdatedAt: now, source: 'mock' };
 }
 
 const viteEnv = (import.meta as unknown as { env?: Record<string, string | boolean | undefined> }).env || {};
@@ -347,7 +347,7 @@ function LeadsList({ data, onRefresh }: { data: LeadsResponse; onRefresh: () => 
           <p className="mb-2 text-sm font-bold uppercase tracking-[0.25em] text-brand-green">Prospect queue</p>
           <h1 className="font-heading text-4xl font-black md:text-5xl">Who needs a human follow-up?</h1>
           <p className="mt-3 max-w-3xl text-white/65">Relationship-first view of inbound Re:Lid interest: who they are, why they care, how strong the opportunity is, and what sales should do next.</p>
-          <p className="mt-2 text-xs text-white/45">Refreshed {formatDate(data.refreshedAt)} · Source: {sourceLabel(data.source)}</p>
+          <p className="mt-2 text-xs text-white/45">Data last updated {formatDate(data.lastDataUpdatedAt || data.refreshedAt)} · Page refreshed {formatDate(data.refreshedAt)} · Source: {sourceLabel(data.source)}</p>
         </div>
         <button onClick={onRefresh} className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-green/40 px-5 py-3 font-bold text-brand-green hover:bg-brand-green hover:text-brand-black"><RefreshCw size={18} /> Refresh prospects</button>
       </div>
@@ -409,7 +409,7 @@ function InfoList({ items, empty, tone = 'green' }: { items: string[]; empty: st
   return <ul className="space-y-2 text-white/75">{items.length ? items.map((item) => <li key={item} className="flex gap-2"><span className={color}>•</span><span>{item}</span></li>) : <li className="text-white/45">{empty}</li>}</ul>;
 }
 
-function DispositionPanel({ lead, onUpdated }: { lead: Lead; onUpdated: (lead: Lead, refreshedAt: string, source: string) => void }) {
+function DispositionPanel({ lead, onUpdated }: { lead: Lead; onUpdated: (lead: Lead, refreshedAt: string, lastDataUpdatedAt: string, source: string) => void }) {
   const [disposition, setDisposition] = useState(effectiveDisposition(lead) || 'NEEDS_RESEARCH');
   const [reason, setReason] = useState(lead.disposition_reason || '');
   const [nextAt, setNextAt] = useState(lead.next_follow_up_at || '');
@@ -428,7 +428,7 @@ function DispositionPanel({ lead, onUpdated }: { lead: Lead; onUpdated: (lead: L
         return;
       }
       const result = await updateDispositionApi(lead.id, { disposition: overrideDisposition, disposition_reason: overrideReason, next_follow_up_at: nextAt, next_follow_up_note: nextNote, owner_notes: ownerNotes, internal_conversation_notes: internalNotes, action });
-      onUpdated(result.lead, result.refreshedAt, result.source);
+      onUpdated(result.lead, result.refreshedAt, result.lastDataUpdatedAt, result.source);
       setNotice({ type: 'success', message: `${overrideDisposition} saved. No email sent and no Gmail draft created.` });
     } catch (error) {
       setNotice({ type: 'error', message: error instanceof Error ? error.message : 'Could not save disposition' });
@@ -454,7 +454,7 @@ function DispositionPanel({ lead, onUpdated }: { lead: Lead; onUpdated: (lead: L
   </section>;
 }
 
-function LeadDetail({ lead, refreshedAt, source, onLeadUpdated }: { lead: Lead; refreshedAt: string; source: string; onLeadUpdated: (lead: Lead, refreshedAt: string, source: string) => void }) {
+function LeadDetail({ lead, refreshedAt, lastDataUpdatedAt, source, onLeadUpdated }: { lead: Lead; refreshedAt: string; lastDataUpdatedAt: string; source: string; onLeadUpdated: (lead: Lead, refreshedAt: string, lastDataUpdatedAt: string, source: string) => void }) {
   const [copied, setCopied] = useState('');
   const fullEmail = `Subject: ${lead.draft_subject}\n\n${lead.draft_body}`;
   const score = lead.fit_score ?? '—';
@@ -470,7 +470,7 @@ function LeadDetail({ lead, refreshedAt, source, onLeadUpdated }: { lead: Lead; 
           <div className="mb-4 flex flex-wrap gap-2">{badge(primaryPriority(lead))}{badge(lead.status)}{lead.lead_type && badge(lead.lead_type)}</div>
           <h1 className="font-heading text-4xl font-black md:text-5xl">{lead.researched_company_name || lead.company || 'Unknown company'}</h1>
           <p className="mt-3 max-w-3xl text-xl text-white/75">{shortText(lead.company_summary || lead.qualification_notes || lead.message, 'No enrichment summary yet.')}</p>
-          <p className="mt-3 text-xs text-white/40">Refreshed {formatDate(refreshedAt)} · Source: {sourceLabel(source)}</p>
+          <p className="mt-3 text-xs text-white/40">Data last updated {formatDate(lastDataUpdatedAt || refreshedAt)} · Page refreshed {formatDate(refreshedAt)} · Source: {sourceLabel(source)}</p>
         </div>
         <div className="rounded-3xl border border-brand-green/30 bg-brand-green/10 p-5">
           <p className="text-sm font-bold uppercase tracking-wider text-brand-green">Opportunity score</p>
@@ -569,10 +569,10 @@ function AdminRoutes() {
       if (localMockAdmin) {
         const mock = localMockResponse();
         const found = mock.leads.find((item) => item.id === id) || mock.leads[0];
-        setLead(found); setData({ leads: [found], refreshedAt: mock.refreshedAt, source: mock.source });
+        setLead(found); setData({ leads: [found], refreshedAt: mock.refreshedAt, lastDataUpdatedAt: mock.lastDataUpdatedAt, source: mock.source });
         return;
       }
-      const result = await api<{ lead: Lead; refreshedAt: string; source: string }>(`/api/admin/leads/${id}`); setLead(result.lead); setData({ leads: [result.lead], refreshedAt: result.refreshedAt, source: result.source as any }); }
+      const result = await api<{ lead: Lead; refreshedAt: string; lastDataUpdatedAt: string; source: string }>(`/api/admin/leads/${id}`); setLead(result.lead); setData({ leads: [result.lead], refreshedAt: result.refreshedAt, lastDataUpdatedAt: result.lastDataUpdatedAt, source: result.source as any }); }
     catch (error) { setNotice({ type: 'error', message: error instanceof Error ? error.message : 'Could not load lead' }); }
   }
 
@@ -591,7 +591,7 @@ function AdminRoutes() {
   if (isLogin || authed === false) return <LoginView onLoggedIn={() => { setAuthed(true); history.replaceState(null, '', '/admin/leads'); window.dispatchEvent(new PopStateEvent('popstate')); }} />;
   if (authed === null) return <div className="min-h-screen bg-brand-black p-10 text-white">Checking admin session...</div>;
 
-  return <AdminShell onLogout={logout}>{notice && <div className="mx-auto mt-6 max-w-7xl rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-red-100">{notice.message}</div>}{detailId ? (lead && data ? <LeadDetail lead={lead} refreshedAt={data.refreshedAt} source={data.source} onLeadUpdated={(updatedLead, refreshedAt, source) => { setLead(updatedLead); setData({ leads: [updatedLead], refreshedAt, source: source as any }); }} /> : <div className="p-10">Loading prospect...</div>) : (data ? <LeadsList data={data} onRefresh={loadLeads} /> : <div className="p-10">Loading prospects...</div>)}</AdminShell>;
+  return <AdminShell onLogout={logout}>{notice && <div className="mx-auto mt-6 max-w-7xl rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-red-100">{notice.message}</div>}{detailId ? (lead && data ? <LeadDetail lead={lead} refreshedAt={data.refreshedAt} lastDataUpdatedAt={data.lastDataUpdatedAt} source={data.source} onLeadUpdated={(updatedLead, refreshedAt, lastDataUpdatedAt, source) => { setLead(updatedLead); setData({ leads: [updatedLead], refreshedAt, lastDataUpdatedAt, source: source as any }); }} /> : <div className="p-10">Loading prospect...</div>) : (data ? <LeadsList data={data} onRefresh={loadLeads} /> : <div className="p-10">Loading prospects...</div>)}</AdminShell>;
 }
 
 export default function AdminApp() {
