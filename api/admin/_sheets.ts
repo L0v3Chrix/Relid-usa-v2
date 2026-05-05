@@ -2,8 +2,16 @@ import { createSign } from 'node:crypto';
 import type { Lead } from '../../lib/adminTypes';
 
 const LEADS_COLUMNS = [
-  'received_at','basin_submission_id','dedupe_key','status','status_reason','first_name','last_name','email','phone','company','title','website','message','source_page','utm_source','utm_medium','utm_campaign','raw_submission_json','email_domain','researched_company_name','researched_website','company_summary','beverage_category','lead_type','fit_score','priority','qualification_notes','buying_signals','concerns_or_risks','recommended_next_step','assigned_owner','assigned_inbox','draft_subject','draft_body','draft_rationale','source_urls_json','openai_response_id','processed_at','error_message','create_gmail_draft','gmail_draft_id'
+  'received_at','basin_submission_id','dedupe_key','status','status_reason','first_name','last_name','email','phone','company','title','website','message','source_page','utm_source','utm_medium','utm_campaign','raw_submission_json','email_domain','researched_company_name','researched_website','company_summary','beverage_category','lead_type','fit_score','priority','qualification_notes','buying_signals','concerns_or_risks','recommended_next_step','assigned_owner','assigned_inbox','draft_subject','draft_body','draft_rationale','source_urls_json','openai_response_id','processed_at','error_message','create_gmail_draft','gmail_draft_id','research_depth','research_status','narrow_research_summary','wide_research_summary','company_facts_json','product_portfolio_json','distribution_channels_json','retailer_presence_json','manufacturing_or_copacker_signals_json','recent_news_json','leadership_contacts_json','decision_maker_hypothesis','use_case_hypothesis','personalization_hooks_json','competitive_context','research_confidence','research_gaps_json','nepq_angle','nepq_discovery_questions_json','nepq_tone_notes','response_strategy','follow_up_question_stack_json','human_review_flags_json','source_evidence_json','research_evidence_json','disposition','disposition_reason','disposition_updated_at','disposition_updated_by','last_human_action_at','next_follow_up_at','next_follow_up_note','owner_notes','internal_conversation_notes','last_contacted_at','replied_at','call_scheduled_at','pipeline_value_estimate','pipeline_stage'
 ];
+
+export const ALLOWED_DISPOSITIONS = [
+  'NEEDS_RESEARCH','READY_FOR_REVIEW','NEEDS_OWNER_INPUT','READY_TO_REPLY','REPLIED','WAITING_ON_PROSPECT','CALL_SCHEDULED','QUALIFYING','SAMPLE_FOLLOW_UP','OPPORTUNITY','NURTURE','DISQUALIFIED','SPAM_OR_VENDOR','CLOSED_NO_ACTION'
+] as const;
+
+const PIPELINE_UPDATE_FIELDS = [
+  'status','status_reason','disposition','disposition_reason','disposition_updated_at','disposition_updated_by','last_human_action_at','next_follow_up_at','next_follow_up_note','owner_notes','internal_conversation_notes','last_contacted_at','replied_at','call_scheduled_at','pipeline_value_estimate','pipeline_stage'
+] as const;
 
 type SheetSource = 'google-sheet' | 'apps-script-bridge' | 'mock';
 
@@ -95,6 +103,19 @@ function parseJson(value: string): unknown {
   try { return JSON.parse(value); } catch { return value; }
 }
 
+function parseJsonList(value: string): string[] {
+  if (!value) return [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (Array.isArray(parsed)) {
+      return parsed.map((item) => typeof item === 'string' ? item : JSON.stringify(item)).filter(Boolean);
+    }
+  } catch {}
+  return splitList(trimmed);
+}
+
 function parseNumber(value: string): number | null {
   if (value === undefined || value === null || value === '') return null;
   const num = Number(value);
@@ -154,6 +175,45 @@ function rowToLead(headers: string[], row: string[], index: number): Lead {
     error_message: get('error_message'),
     create_gmail_draft: get('create_gmail_draft'),
     gmail_draft_id: get('gmail_draft_id'),
+    research_depth: get('research_depth'),
+    research_status: get('research_status'),
+    narrow_research_summary: get('narrow_research_summary'),
+    wide_research_summary: get('wide_research_summary'),
+    company_facts_json: parseJson(get('company_facts_json')),
+    product_portfolio_json: parseJson(get('product_portfolio_json')),
+    distribution_channels_json: parseJson(get('distribution_channels_json')),
+    retailer_presence_json: parseJson(get('retailer_presence_json')),
+    manufacturing_or_copacker_signals_json: parseJson(get('manufacturing_or_copacker_signals_json')),
+    recent_news_json: parseJson(get('recent_news_json')),
+    leadership_contacts_json: parseJson(get('leadership_contacts_json')),
+    decision_maker_hypothesis: get('decision_maker_hypothesis'),
+    use_case_hypothesis: get('use_case_hypothesis'),
+    personalization_hooks_json: parseJsonList(get('personalization_hooks_json')),
+    competitive_context: get('competitive_context'),
+    research_confidence: parseNumber(get('research_confidence')),
+    research_gaps_json: parseJsonList(get('research_gaps_json')),
+    nepq_angle: get('nepq_angle'),
+    nepq_discovery_questions_json: parseJsonList(get('nepq_discovery_questions_json')),
+    nepq_tone_notes: get('nepq_tone_notes'),
+    response_strategy: get('response_strategy'),
+    follow_up_question_stack_json: parseJsonList(get('follow_up_question_stack_json')),
+    human_review_flags_json: parseJsonList(get('human_review_flags_json')),
+    source_evidence_json: parseJson(get('source_evidence_json')),
+    research_evidence_json: parseJson(get('research_evidence_json')),
+    disposition: get('disposition'),
+    disposition_reason: get('disposition_reason'),
+    disposition_updated_at: get('disposition_updated_at'),
+    disposition_updated_by: get('disposition_updated_by'),
+    last_human_action_at: get('last_human_action_at'),
+    next_follow_up_at: get('next_follow_up_at'),
+    next_follow_up_note: get('next_follow_up_note'),
+    owner_notes: get('owner_notes'),
+    internal_conversation_notes: get('internal_conversation_notes'),
+    last_contacted_at: get('last_contacted_at'),
+    replied_at: get('replied_at'),
+    call_scheduled_at: get('call_scheduled_at'),
+    pipeline_value_estimate: get('pipeline_value_estimate'),
+    pipeline_stage: get('pipeline_stage'),
   };
 }
 
@@ -212,7 +272,7 @@ export async function getLeads(): Promise<{ leads: Lead[]; refreshedAt: string; 
   const sheetId = requiredEnv('GOOGLE_SHEET_ID');
   const tab = process.env.GOOGLE_SHEETS_LEADS_TAB || 'Leads';
   const token = await getAccessToken();
-  const range = encodeURIComponent(`${tab}!A:AZ`);
+  const range = encodeURIComponent(`${tab}!A:CV`);
   const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -228,4 +288,87 @@ export async function getLeadById(id: string): Promise<{ lead: Lead | null; refr
   const decoded = decodeURIComponent(id);
   const lead = leads.find((item) => item.id === id || decodeURIComponent(item.id) === decoded || String(item.rowNumber) === decoded) || null;
   return { lead, refreshedAt, source };
+}
+
+type DispositionUpdateInput = {
+  disposition: string;
+  disposition_reason?: string;
+  next_follow_up_at?: string;
+  next_follow_up_note?: string;
+  owner_notes?: string;
+  internal_conversation_notes?: string;
+  pipeline_value_estimate?: string;
+  pipeline_stage?: string;
+  action?: string;
+  updated_by: string;
+};
+
+function cleanPipelineUpdate(input: DispositionUpdateInput): Record<string, string> {
+  const now = new Date().toISOString();
+  const updates: Record<string, string> = {
+    status: input.disposition,
+    status_reason: input.disposition_reason || input.next_follow_up_note || `Pipeline disposition: ${input.disposition}`,
+    disposition: input.disposition,
+    disposition_reason: input.disposition_reason || '',
+    next_follow_up_at: input.next_follow_up_at || '',
+    next_follow_up_note: input.next_follow_up_note || '',
+    owner_notes: input.owner_notes || '',
+    internal_conversation_notes: input.internal_conversation_notes || '',
+    pipeline_value_estimate: input.pipeline_value_estimate || '',
+    pipeline_stage: input.pipeline_stage || input.disposition,
+    disposition_updated_at: now,
+    disposition_updated_by: input.updated_by,
+    last_human_action_at: now,
+  };
+  if (input.disposition === 'REPLIED') {
+    updates.replied_at = now;
+    updates.last_contacted_at = now;
+  }
+  if (input.disposition === 'WAITING_ON_PROSPECT') updates.last_contacted_at = now;
+  if (input.disposition === 'CALL_SCHEDULED') updates.call_scheduled_at = input.next_follow_up_at || now;
+
+  return Object.fromEntries(Object.entries(updates).filter(([key]) => (PIPELINE_UPDATE_FIELDS as readonly string[]).includes(key)));
+}
+
+async function postAppsScriptBridge(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const webappUrl = requiredEnv('APPS_SCRIPT_WEBAPP_URL');
+  const token = requiredEnv('BASIN_WEBHOOK_TOKEN').trim();
+  const response = await fetch(webappUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...body, token }),
+  });
+  const text = await response.text();
+  if (!response.ok) throw new Error(`Apps Script bridge failed: ${response.status} ${text}`);
+  const data = JSON.parse(text) as Record<string, unknown>;
+  if (data.success !== true) throw new Error(`Apps Script bridge error: ${String(data.error || text)}`);
+  return data;
+}
+
+export async function updateLeadDisposition(id: string, input: DispositionUpdateInput): Promise<{ lead: Lead | null; refreshedAt: string; source: SheetSource }> {
+  if (!ALLOWED_DISPOSITIONS.includes(input.disposition as typeof ALLOWED_DISPOSITIONS[number])) {
+    throw new Error('Invalid disposition');
+  }
+  const current = await getLeadById(id);
+  if (!current.lead) throw new Error('Lead not found');
+  if (!process.env.APPS_SCRIPT_WEBAPP_URL || !process.env.BASIN_WEBHOOK_TOKEN) {
+    throw new Error('Disposition updates require APPS_SCRIPT_WEBAPP_URL and BASIN_WEBHOOK_TOKEN');
+  }
+
+  const updates = cleanPipelineUpdate(input);
+  await postAppsScriptBridge({
+    action: 'runner_update_row',
+    row_number: current.lead.rowNumber,
+    lead_id: id,
+    dedupe_key: current.lead.dedupe_key,
+    basin_submission_id: current.lead.basin_submission_id,
+    updates,
+    audit: {
+      action: input.action || 'update_disposition',
+      updated_by: input.updated_by,
+      disposition: input.disposition,
+      note: input.disposition_reason || input.next_follow_up_note || '',
+    },
+  });
+  return getLeadById(id);
 }

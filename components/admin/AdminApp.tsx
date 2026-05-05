@@ -13,8 +13,45 @@ const priorityClasses: Record<string, string> = {
   NEW: 'bg-brand-green/20 text-brand-green border-brand-green/40',
   PROCESSING: 'bg-yellow-500/20 text-yellow-100 border-yellow-400/40',
   DRAFT_READY: 'bg-emerald-500/20 text-emerald-100 border-emerald-400/50',
+  READY_TO_REPLY: 'bg-emerald-500/20 text-emerald-100 border-emerald-400/50',
+  READY_FOR_REVIEW: 'bg-emerald-500/20 text-emerald-100 border-emerald-400/50',
+  REPLIED: 'bg-blue-500/20 text-blue-100 border-blue-400/50',
+  WAITING_ON_PROSPECT: 'bg-cyan-500/20 text-cyan-100 border-cyan-400/50',
+  CALL_SCHEDULED: 'bg-indigo-500/20 text-indigo-100 border-indigo-400/50',
+  QUALIFYING: 'bg-lime-500/20 text-lime-100 border-lime-400/50',
+  SAMPLE_FOLLOW_UP: 'bg-teal-500/20 text-teal-100 border-teal-400/50',
+  OPPORTUNITY: 'bg-brand-green/25 text-brand-green border-brand-green/60',
+  NURTURE: 'bg-amber-500/20 text-amber-100 border-amber-400/50',
+  NEEDS_RESEARCH: 'bg-purple-500/20 text-purple-100 border-purple-400/50',
+  NEEDS_OWNER_INPUT: 'bg-fuchsia-500/20 text-fuchsia-100 border-fuchsia-400/50',
+  DISQUALIFIED: 'bg-zinc-600/30 text-zinc-200 border-zinc-400/40',
+  SPAM_OR_VENDOR: 'bg-zinc-700/50 text-zinc-200 border-zinc-500/40',
+  CLOSED_NO_ACTION: 'bg-zinc-700/50 text-zinc-300 border-zinc-500/40',
   ERROR: 'bg-red-950/70 text-red-100 border-red-500/50',
 };
+
+const dispositions = ['NEEDS_RESEARCH','READY_FOR_REVIEW','NEEDS_OWNER_INPUT','READY_TO_REPLY','REPLIED','WAITING_ON_PROSPECT','CALL_SCHEDULED','QUALIFYING','SAMPLE_FOLLOW_UP','OPPORTUNITY','NURTURE','DISQUALIFIED','SPAM_OR_VENDOR','CLOSED_NO_ACTION'];
+
+const queueDefs = [
+  { key: 'needs', label: 'Needs Attention', match: (l: Lead) => ['NEEDS_RESEARCH','NEEDS_OWNER_INPUT'].includes(effectiveDisposition(l)) || ['NEW','NEEDS_REVIEW','ERROR'].includes(String(l.status).toUpperCase()) },
+  { key: 'ready', label: 'Ready Review / Reply', match: (l: Lead) => ['READY_FOR_REVIEW','READY_TO_REPLY'].includes(effectiveDisposition(l)) || (!l.disposition && l.status === 'DRAFT_READY') },
+  { key: 'waiting', label: 'Waiting on Prospect', match: (l: Lead) => ['REPLIED','WAITING_ON_PROSPECT'].includes(effectiveDisposition(l)) },
+  { key: 'active', label: 'Active Opportunities', match: (l: Lead) => ['CALL_SCHEDULED','QUALIFYING','SAMPLE_FOLLOW_UP','OPPORTUNITY'].includes(effectiveDisposition(l)) },
+  { key: 'nurture', label: 'Nurture', match: (l: Lead) => effectiveDisposition(l) === 'NURTURE' },
+  { key: 'closed', label: 'Closed / Disqualified', match: (l: Lead) => ['DISQUALIFIED','SPAM_OR_VENDOR','CLOSED_NO_ACTION'].includes(effectiveDisposition(l)) },
+];
+
+const quickActions = [
+  { label: 'Mark reviewed', disposition: 'NEEDS_OWNER_INPUT', reason: 'Reviewed; needs owner input.' },
+  { label: 'Needs more research', disposition: 'NEEDS_RESEARCH', reason: 'Needs additional research before reply.' },
+  { label: 'Ready to reply', disposition: 'READY_TO_REPLY', reason: 'Draft reviewed and ready for external reply.' },
+  { label: 'Mark replied', disposition: 'REPLIED', reason: 'External reply was sent outside this dashboard. No email sent here.' },
+  { label: 'Waiting on prospect', disposition: 'WAITING_ON_PROSPECT', reason: 'Waiting for prospect response.' },
+  { label: 'Schedule call', disposition: 'CALL_SCHEDULED', reason: 'Call scheduled or being scheduled.' },
+  { label: 'Move to opportunity', disposition: 'OPPORTUNITY', reason: 'Credible commercial opportunity.' },
+  { label: 'Nurture', disposition: 'NURTURE', reason: 'Not urgent; future follow-up recommended.' },
+  { label: 'Disqualify', disposition: 'DISQUALIFIED', reason: 'Not a fit for active follow-up.' },
+];
 
 const priorityRank: Record<string, number> = { HOT: 0, WARM: 1, DRAFT_READY: 2, NEEDS_REVIEW: 3, NEW: 4, COOL: 5, ERROR: 6, DISQUALIFY: 7, DUPLICATE: 8 };
 
@@ -35,6 +72,33 @@ function contactName(lead: Lead) {
 
 function primaryPriority(lead: Lead) {
   return lead.priority || lead.status || 'NEW';
+}
+
+function effectiveDisposition(lead: Lead) {
+  if (lead.disposition) return String(lead.disposition).toUpperCase();
+  const status = String(lead.status || '').toUpperCase();
+  if (dispositions.includes(status)) return status;
+  if (lead.status === 'DRAFT_READY') return 'READY_FOR_REVIEW';
+  if (lead.status === 'NEEDS_REVIEW' || lead.status === 'ERROR') return 'NEEDS_OWNER_INPUT';
+  if (lead.status === 'NEW' || lead.status === 'PROCESSING') return 'NEEDS_RESEARCH';
+  return '';
+}
+
+function isOverdue(value?: string) {
+  if (!value) return false;
+  const time = Date.parse(value);
+  return Number.isFinite(time) && time < Date.now();
+}
+
+function renderJsonSummary(value: unknown) {
+  if (!value) return <span className="text-white/45">No data captured.</span>;
+  if (typeof value === 'string') return <p className="whitespace-pre-wrap text-white/75">{value}</p>;
+  if (Array.isArray(value)) return <InfoList items={value.map((item) => typeof item === 'string' ? item : JSON.stringify(item))} empty="No data captured." />;
+  return <pre className="max-h-80 overflow-auto rounded-xl bg-black/40 p-3 text-xs text-white/70">{JSON.stringify(value, null, 2)}</pre>;
+}
+
+async function updateDispositionApi(id: string, payload: Record<string, string>) {
+  return api<{ lead: Lead; refreshedAt: string; source: string }>(`/api/admin/leads/${id}/disposition`, { method: 'POST', body: JSON.stringify(payload) });
 }
 
 function badge(value?: string) {
@@ -173,17 +237,20 @@ function MetricCard({ label, value, helper, icon }: { label: string; value: numb
   return <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><div className="mb-4 flex items-center justify-between text-brand-green">{icon}<span className="font-heading text-4xl font-black text-white">{value}</span></div><p className="text-sm font-bold uppercase tracking-wider text-white/55">{label}</p><p className="mt-2 text-sm text-white/45">{helper}</p></div>;
 }
 
-function LeadCard({ lead }: { lead: Lead }) {
+function LeadCard({ lead, onQuickAction }: { lead: Lead; onQuickAction: (lead: Lead, disposition: string, reason: string) => void }) {
   const score = lead.fit_score ?? '—';
   const priority = primaryPriority(lead);
+  const disposition = effectiveDisposition(lead);
   const title = lead.researched_company_name || lead.company || 'Unknown company';
   const hook = shortText(relationshipHook(lead), 'Waiting on enrichment. Open the record to review the original inquiry.');
   const signals = lead.buying_signals.slice(0, 2);
+  const hooks = (lead.personalization_hooks_json || []).slice(0, 2);
   return (
-    <a href={`/admin/leads/${lead.id}`} className="block rounded-3xl border border-white/10 bg-white/[0.035] p-5 transition hover:border-brand-green/50 hover:bg-white/[0.06]">
+    <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-5 transition hover:border-brand-green/50 hover:bg-white/[0.06]">
+      <a href={`/admin/leads/${lead.id}`} className="block">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
-          <div className="mb-3 flex flex-wrap items-center gap-2">{badge(priority)}{lead.status !== priority && badge(lead.status)}{lead.lead_type && badge(lead.lead_type)}</div>
+          <div className="mb-3 flex flex-wrap items-center gap-2">{badge(disposition || priority)}{lead.status && badge(lead.status)}{lead.lead_type && badge(lead.lead_type)}{isOverdue(lead.next_follow_up_at) && badge('OVERDUE')}</div>
           <h2 className="font-heading text-2xl font-black text-white">{title}</h2>
           <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/60">
             <span className="inline-flex items-center gap-1.5"><UserRound size={15} className="text-brand-green" />{contactName(lead)}</span>
@@ -198,15 +265,22 @@ function LeadCard({ lead }: { lead: Lead }) {
           <div className="rounded-2xl border border-brand-green/25 bg-brand-green/10 p-4">
             <p className="text-xs font-bold uppercase tracking-wider text-brand-green">Lead score</p>
             <p className="font-heading text-5xl font-black">{score}</p>
+            <p className="mt-1 text-xs text-white/50">Research confidence: {lead.research_confidence ?? '—'}</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
             <p className="mb-1 text-xs font-bold uppercase tracking-wider text-white/45">Best next action</p>
             <p className="line-clamp-4 text-sm text-white/80">{nextActionFor(lead)}</p>
+            <p className={cx('mt-2 text-xs', isOverdue(lead.next_follow_up_at) ? 'text-red-200' : 'text-white/50')}>Next follow-up: {formatDate(lead.next_follow_up_at || '')}</p>
           </div>
         </div>
       </div>
-      {signals.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{signals.map((signal) => <span key={signal} className="rounded-full border border-brand-green/20 bg-brand-green/10 px-3 py-1 text-xs text-brand-green">{signal}</span>)}</div>}
-    </a>
+      </a>
+      {(signals.length > 0 || hooks.length > 0) && <div className="mt-4 flex flex-wrap gap-2">{[...signals, ...hooks].map((signal) => <span key={signal} className="rounded-full border border-brand-green/20 bg-brand-green/10 px-3 py-1 text-xs text-brand-green">{signal}</span>)}</div>}
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-white/10 pt-4">
+        {quickActions.slice(1, 8).map((action) => <button key={action.disposition} onClick={() => onQuickAction(lead, action.disposition, action.reason)} className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-bold text-white/70 hover:border-brand-green hover:text-brand-green">{action.label}</button>)}
+      </div>
+      {lead.owner_notes && <p className="mt-3 text-xs text-white/45"><span className="font-bold text-white/60">Owner notes:</span> {lead.owner_notes}</p>}
+    </div>
   );
 }
 
@@ -215,7 +289,28 @@ function LeadsList({ data, onRefresh }: { data: LeadsResponse; onRefresh: () => 
   const [status, setStatus] = useState('');
   const [priority, setPriority] = useState('');
   const [leadType, setLeadType] = useState('');
+  const [queue, setQueue] = useState('needs');
+  const [notice, setNotice] = useState<Notice>(null);
+  const [busyLead, setBusyLead] = useState('');
   const leads = data.leads || [];
+
+  async function onQuickAction(lead: Lead, disposition: string, reason: string) {
+    setBusyLead(lead.id);
+    setNotice(null);
+    try {
+      if (localMockAdmin) {
+        setNotice({ type: 'success', message: `${disposition} recorded in mock mode. No email sent.` });
+        return;
+      }
+      await updateDispositionApi(lead.id, { disposition, disposition_reason: reason, action: disposition === 'REPLIED' ? 'mark_replied_external_record_only' : 'quick_action' });
+      setNotice({ type: 'success', message: `${disposition} saved. Mark replied records external action only and sends nothing.` });
+      await onRefresh();
+    } catch (error) {
+      setNotice({ type: 'error', message: error instanceof Error ? error.message : 'Could not update disposition' });
+    } finally {
+      setBusyLead('');
+    }
+  }
 
   const options = useMemo(() => ({
     statuses: [...new Set(leads.map((l) => l.status).filter(Boolean))],
@@ -224,16 +319,23 @@ function LeadsList({ data, onRefresh }: { data: LeadsResponse; onRefresh: () => 
   }), [leads]);
 
   const filtered = leads.filter((lead) => {
-    const haystack = [lead.company, contactName(lead), lead.email, lead.message, lead.researched_company_name, lead.qualification_notes, lead.company_summary].join(' ').toLowerCase();
-    return (!query || haystack.includes(query.toLowerCase())) && (!status || lead.status === status) && (!priority || lead.priority === priority) && (!leadType || lead.lead_type === leadType);
+    const haystack = [lead.company, contactName(lead), lead.email, lead.message, lead.researched_company_name, lead.qualification_notes, lead.company_summary, lead.owner_notes, lead.narrow_research_summary, lead.wide_research_summary].join(' ').toLowerCase();
+    const activeQueue = queueDefs.find((item) => item.key === queue);
+    return (!activeQueue || activeQueue.match(lead)) && (!query || haystack.includes(query.toLowerCase())) && (!status || lead.status === status) && (!priority || lead.priority === priority) && (!leadType || lead.lead_type === leadType);
   }).sort((a, b) => {
+    const aOverdue = isOverdue(a.next_follow_up_at) ? 0 : 1;
+    const bOverdue = isOverdue(b.next_follow_up_at) ? 0 : 1;
+    if (aOverdue !== bOverdue) return aOverdue - bOverdue;
+    const ad = effectiveDisposition(a) === 'NEEDS_OWNER_INPUT' ? 0 : 1;
+    const bd = effectiveDisposition(b) === 'NEEDS_OWNER_INPUT' ? 0 : 1;
+    if (ad !== bd) return ad - bd;
     const ar = priorityRank[String(primaryPriority(a)).toUpperCase()] ?? 9;
     const br = priorityRank[String(primaryPriority(b)).toUpperCase()] ?? 9;
     if (ar !== br) return ar - br;
     return (b.fit_score ?? -1) - (a.fit_score ?? -1);
   });
 
-  const ready = leads.filter((l) => l.status === 'DRAFT_READY').length;
+  const ready = leads.filter((l) => ['READY_FOR_REVIEW','READY_TO_REPLY'].includes(effectiveDisposition(l)) || l.status === 'DRAFT_READY').length;
   const top = leads.filter((l) => ['HOT', 'WARM'].includes(String(l.priority).toUpperCase())).length;
   const needsHuman = leads.filter((l) => l.status === 'NEEDS_REVIEW' || l.status === 'ERROR' || l.priority === 'NEEDS_REVIEW').length;
   const untouched = leads.filter((l) => l.status === 'NEW' || l.status === 'PROCESSING').length;
@@ -251,16 +353,25 @@ function LeadsList({ data, onRefresh }: { data: LeadsResponse; onRefresh: () => 
       </div>
 
       <div className="mb-6 grid gap-4 md:grid-cols-4">
-        <MetricCard label="Ready to send" value={ready} helper="Draft reply exists; human can review/copy." icon={<MessageSquare size={24} />} />
+        <MetricCard label="Ready to reply" value={ready} helper="Draft exists; human can review/copy/reply externally." icon={<MessageSquare size={24} />} />
         <MetricCard label="Hot / warm" value={top} helper="Best conversations to prioritize first." icon={<Target size={24} />} />
         <MetricCard label="Needs judgment" value={needsHuman} helper="Research gaps, media, risk, or errors." icon={<AlertTriangle size={24} />} />
         <MetricCard label="Awaiting enrichment" value={untouched} helper="New or currently being processed." icon={<Sparkles size={24} />} />
       </div>
 
+      <div className="mb-6 grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+        {queueDefs.map((item) => {
+          const count = leads.filter(item.match).length;
+          return <button key={item.key} onClick={() => setQueue(item.key)} className={cx('rounded-2xl border p-4 text-left transition', queue === item.key ? 'border-brand-green bg-brand-green/10 text-brand-green' : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25')}><span className="block text-xs font-bold uppercase tracking-wider">{item.label}</span><span className="font-heading text-3xl font-black">{count}</span></button>;
+        })}
+      </div>
+      {notice && <div className={cx('mb-4 rounded-xl border px-4 py-3 text-sm', notice.type === 'error' ? 'border-red-400/40 bg-red-500/10 text-red-100' : 'border-brand-green/30 bg-brand-green/10 text-brand-green')}>{notice.message}</div>}
+      <div className="mb-4 rounded-2xl border border-yellow-400/30 bg-yellow-500/10 p-4 text-sm text-yellow-100"><strong>Safety:</strong> “Mark replied” only records an external human action in the Sheet. This dashboard sends no email and creates no Gmail draft.</div>
+
       <Filters query={query} setQuery={setQuery} status={status} setStatus={setStatus} priority={priority} setPriority={setPriority} leadType={leadType} setLeadType={setLeadType} options={options} />
 
-      <div className="mt-6 grid gap-4">
-        {filtered.length === 0 ? <div className="rounded-3xl border border-white/10 p-10 text-center text-white/55">No prospects match the current filters.</div> : filtered.map((lead) => <div key={lead.id}><LeadCard lead={lead} /></div>)}
+      <div className="mt-6 grid gap-4 opacity-100">
+        {filtered.length === 0 ? <div className="rounded-3xl border border-white/10 p-10 text-center text-white/55">No prospects match the current filters.</div> : filtered.map((lead) => <div key={lead.id} className={busyLead === lead.id ? 'opacity-60' : ''}><LeadCard lead={lead} onQuickAction={onQuickAction} /></div>)}
       </div>
     </main>
   );
@@ -298,7 +409,52 @@ function InfoList({ items, empty, tone = 'green' }: { items: string[]; empty: st
   return <ul className="space-y-2 text-white/75">{items.length ? items.map((item) => <li key={item} className="flex gap-2"><span className={color}>•</span><span>{item}</span></li>) : <li className="text-white/45">{empty}</li>}</ul>;
 }
 
-function LeadDetail({ lead, refreshedAt, source }: { lead: Lead; refreshedAt: string; source: string }) {
+function DispositionPanel({ lead, onUpdated }: { lead: Lead; onUpdated: (lead: Lead, refreshedAt: string, source: string) => void }) {
+  const [disposition, setDisposition] = useState(effectiveDisposition(lead) || 'NEEDS_RESEARCH');
+  const [reason, setReason] = useState(lead.disposition_reason || '');
+  const [nextAt, setNextAt] = useState(lead.next_follow_up_at || '');
+  const [nextNote, setNextNote] = useState(lead.next_follow_up_note || '');
+  const [ownerNotes, setOwnerNotes] = useState(lead.owner_notes || '');
+  const [internalNotes, setInternalNotes] = useState(lead.internal_conversation_notes || '');
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<Notice>(null);
+
+  async function save(action = 'detail_update', overrideDisposition = disposition, overrideReason = reason) {
+    setSaving(true);
+    setNotice(null);
+    try {
+      if (localMockAdmin) {
+        setNotice({ type: 'success', message: 'Saved in mock mode. No email sent.' });
+        return;
+      }
+      const result = await updateDispositionApi(lead.id, { disposition: overrideDisposition, disposition_reason: overrideReason, next_follow_up_at: nextAt, next_follow_up_note: nextNote, owner_notes: ownerNotes, internal_conversation_notes: internalNotes, action });
+      onUpdated(result.lead, result.refreshedAt, result.source);
+      setNotice({ type: 'success', message: `${overrideDisposition} saved. No email sent and no Gmail draft created.` });
+    } catch (error) {
+      setNotice({ type: 'error', message: error instanceof Error ? error.message : 'Could not save disposition' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return <section className="mb-8 rounded-3xl border border-brand-green/25 bg-white/[0.04] p-5">
+    <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between"><div><p className="text-sm font-bold uppercase tracking-[0.25em] text-brand-green">Pipeline control</p><h2 className="font-heading text-2xl font-black">Disposition, notes, next follow-up</h2></div>{badge(disposition)}</div>
+    <div className="mb-4 rounded-2xl border border-yellow-400/30 bg-yellow-500/10 p-4 text-sm text-yellow-100"><strong>Important:</strong> Mark replied records that a human replied outside this app. It does not send email and does not create a Gmail draft.</div>
+    {notice && <div className={cx('mb-4 rounded-xl border px-4 py-3 text-sm', notice.type === 'error' ? 'border-red-400/40 bg-red-500/10 text-red-100' : 'border-brand-green/30 bg-brand-green/10 text-brand-green')}>{notice.message}</div>}
+    <div className="grid gap-4 lg:grid-cols-3">
+      <label><span className="mb-2 block text-xs font-bold uppercase tracking-wider text-white/40">Disposition</span><select value={disposition} onChange={(e) => setDisposition(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-white">{dispositions.map((item) => <option key={item}>{item}</option>)}</select></label>
+      <label><span className="mb-2 block text-xs font-bold uppercase tracking-wider text-white/40">Next follow-up</span><input value={nextAt} onChange={(e) => setNextAt(e.target.value)} placeholder="YYYY-MM-DD or timestamp" className="w-full rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-white" /></label>
+      <label><span className="mb-2 block text-xs font-bold uppercase tracking-wider text-white/40">Reason</span><input value={reason} onChange={(e) => setReason(e.target.value)} className="w-full rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-white" /></label>
+      <label className="lg:col-span-1"><span className="mb-2 block text-xs font-bold uppercase tracking-wider text-white/40">Owner notes</span><textarea value={ownerNotes} onChange={(e) => setOwnerNotes(e.target.value)} rows={4} className="w-full rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-white" /></label>
+      <label className="lg:col-span-1"><span className="mb-2 block text-xs font-bold uppercase tracking-wider text-white/40">Next follow-up note</span><textarea value={nextNote} onChange={(e) => setNextNote(e.target.value)} rows={4} className="w-full rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-white" /></label>
+      <label className="lg:col-span-1"><span className="mb-2 block text-xs font-bold uppercase tracking-wider text-white/40">Internal conversation notes</span><textarea value={internalNotes} onChange={(e) => setInternalNotes(e.target.value)} rows={4} className="w-full rounded-xl border border-white/10 bg-black/50 px-4 py-3 text-white" /></label>
+    </div>
+    <div className="mt-4 flex flex-wrap gap-2"><button disabled={saving} onClick={() => save()} className="rounded-xl bg-brand-green px-5 py-3 font-bold text-brand-black hover:bg-white disabled:opacity-60">{saving ? 'Saving...' : 'Save pipeline state'}</button>{quickActions.map((action) => <button key={action.disposition} disabled={saving} onClick={() => { setDisposition(action.disposition); setReason(action.reason); save(action.disposition === 'REPLIED' ? 'mark_replied_external_record_only' : 'detail_quick_action', action.disposition, action.reason); }} className="rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-white/70 hover:border-brand-green hover:text-brand-green disabled:opacity-60">{action.label}</button>)}</div>
+    <div className="mt-4 grid gap-3 text-xs text-white/50 md:grid-cols-3"><span>Updated: {formatDate(lead.disposition_updated_at || '')}</span><span>By: {lead.disposition_updated_by || '—'}</span><span>Last human action: {formatDate(lead.last_human_action_at || '')}</span></div>
+  </section>;
+}
+
+function LeadDetail({ lead, refreshedAt, source, onLeadUpdated }: { lead: Lead; refreshedAt: string; source: string; onLeadUpdated: (lead: Lead, refreshedAt: string, source: string) => void }) {
   const [copied, setCopied] = useState('');
   const fullEmail = `Subject: ${lead.draft_subject}\n\n${lead.draft_body}`;
   const score = lead.fit_score ?? '—';
@@ -322,6 +478,8 @@ function LeadDetail({ lead, refreshedAt, source }: { lead: Lead; refreshedAt: st
           <p className="mt-2 text-white/70">{nextActionFor(lead)}</p>
         </div>
       </div>
+
+      <DispositionPanel lead={lead} onUpdated={onLeadUpdated} />
 
       <div className="mb-8 grid gap-6 lg:grid-cols-[1fr_440px]">
         <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
@@ -356,14 +514,26 @@ function LeadDetail({ lead, refreshedAt, source }: { lead: Lead; refreshedAt: st
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><h2 className="mb-5 font-heading text-2xl font-black">Why this matters</h2><Field label="Qualification notes"><p className="whitespace-pre-wrap">{lead.qualification_notes || 'No qualification notes yet.'}</p></Field><Field label="Draft rationale"><p className="mt-4 whitespace-pre-wrap">{lead.draft_rationale || '—'}</p></Field></section>
         <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><h2 className="mb-5 font-heading text-2xl font-black">Buying signals</h2><InfoList items={lead.buying_signals} empty="No buying signals captured yet." /></section>
-        <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><h2 className="mb-5 font-heading text-2xl font-black">Risks / open questions</h2><InfoList items={lead.concerns_or_risks} empty="No risks captured yet." tone="red" /></section>
+        <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"><h2 className="mb-5 font-heading text-2xl font-black">Risks / open questions</h2><InfoList items={[...lead.concerns_or_risks, ...(lead.research_gaps_json || []), ...(lead.human_review_flags_json || [])]} empty="No risks captured yet." tone="red" /></section>
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <section className="rounded-3xl border border-brand-green/20 bg-white/[0.04] p-5"><h2 className="mb-5 flex items-center gap-2 font-heading text-2xl font-black"><Target className="text-brand-green" /> Conversation Strategy</h2><div className="grid gap-5"><Field label="NEPQ angle"><p className="whitespace-pre-wrap">{lead.nepq_angle || 'No NEPQ strategy captured yet.'}</p></Field><Field label="Response strategy"><p className="whitespace-pre-wrap">{lead.response_strategy || '—'}</p></Field><Field label="Tone notes"><p className="whitespace-pre-wrap">{lead.nepq_tone_notes || '—'}</p></Field><Field label="Discovery questions"><InfoList items={lead.nepq_discovery_questions_json || []} empty="No discovery questions captured yet." /></Field><Field label="Follow-up question stack"><InfoList items={lead.follow_up_question_stack_json || []} empty="No follow-up question stack captured yet." /></Field></div></section>
+        <section className="rounded-3xl border border-brand-green/20 bg-white/[0.04] p-5"><h2 className="mb-5 flex items-center gap-2 font-heading text-2xl font-black"><Sparkles className="text-brand-green" /> Research Briefing</h2><div className="grid gap-5"><Field label="Depth / status / confidence">{[lead.research_depth, lead.research_status, lead.research_confidence ?? ''].filter(Boolean).join(' · ') || '—'}</Field><Field label="Narrow research"><p className="whitespace-pre-wrap">{lead.narrow_research_summary || 'No narrow research summary captured yet.'}</p></Field><Field label="Wide research"><p className="whitespace-pre-wrap">{lead.wide_research_summary || 'No wide research summary captured yet.'}</p></Field><Field label="Decision-maker hypothesis"><p className="whitespace-pre-wrap">{lead.decision_maker_hypothesis || '—'}</p></Field><Field label="Use-case hypothesis"><p className="whitespace-pre-wrap">{lead.use_case_hypothesis || '—'}</p></Field><Field label="Personalization hooks"><InfoList items={lead.personalization_hooks_json || []} empty="No hooks captured yet." /></Field></div></section>
+      </div>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-3">
+        <section className="rounded-3xl border border-white/10 bg-white/[0.035] p-5"><h2 className="mb-5 font-heading text-xl font-black">Company facts</h2>{renderJsonSummary(lead.company_facts_json)}</section>
+        <section className="rounded-3xl border border-white/10 bg-white/[0.035] p-5"><h2 className="mb-5 font-heading text-xl font-black">Products + distribution</h2><div className="grid gap-4"><Field label="Product portfolio">{renderJsonSummary(lead.product_portfolio_json)}</Field><Field label="Distribution channels">{renderJsonSummary(lead.distribution_channels_json)}</Field><Field label="Retailer presence">{renderJsonSummary(lead.retailer_presence_json)}</Field></div></section>
+        <section className="rounded-3xl border border-white/10 bg-white/[0.035] p-5"><h2 className="mb-5 font-heading text-xl font-black">Manufacturing + market context</h2><div className="grid gap-4"><Field label="Manufacturing / co-packer signals">{renderJsonSummary(lead.manufacturing_or_copacker_signals_json)}</Field><Field label="Recent news">{renderJsonSummary(lead.recent_news_json)}</Field><Field label="Competitive context"><p className="whitespace-pre-wrap">{lead.competitive_context || '—'}</p></Field></div></section>
       </div>
 
       <details className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-5">
         <summary className="flex cursor-pointer list-none items-center justify-between text-brand-green"><span className="font-heading text-xl font-black">Technical + source details</span><ChevronDown /></summary>
         <div className="mt-5 grid gap-6 lg:grid-cols-2">
           <section><h3 className="mb-3 font-bold text-white/70">Source URLs</h3><ul className="space-y-2">{lead.source_urls.length ? lead.source_urls.map((url) => <li key={url}><a className="inline-flex items-center gap-2 text-brand-green" href={url} target="_blank" rel="noreferrer">{url}<ExternalLink size={14}/></a></li>) : <li className="text-white/50">No source URLs supplied.</li>}</ul></section>
-          <section className="grid gap-4 sm:grid-cols-2"><Field label="Basin ID">{lead.basin_submission_id}</Field><Field label="Sheet row">{lead.rowNumber}</Field><Field label="Dedupe key">{lead.dedupe_key}</Field><Field label="Processed at">{formatDate(lead.processed_at)}</Field><Field label="Assigned owner">{lead.assigned_owner}</Field><Field label="Assigned inbox">{lead.assigned_inbox}</Field><Field label="UTM source">{lead.utm_source}</Field><Field label="UTM campaign">{lead.utm_campaign}</Field></section>
+          <section><h3 className="mb-3 font-bold text-white/70">Source evidence</h3>{renderJsonSummary(lead.source_evidence_json || lead.research_evidence_json)}</section>
+          <section className="grid gap-4 sm:grid-cols-2"><Field label="Basin ID">{lead.basin_submission_id}</Field><Field label="Sheet row">{lead.rowNumber}</Field><Field label="Dedupe key">{lead.dedupe_key}</Field><Field label="Processed at">{formatDate(lead.processed_at)}</Field><Field label="Assigned owner">{lead.assigned_owner}</Field><Field label="Assigned inbox">{lead.assigned_inbox}</Field><Field label="UTM source">{lead.utm_source}</Field><Field label="UTM campaign">{lead.utm_campaign}</Field><Field label="Pipeline stage">{lead.pipeline_stage}</Field><Field label="Last contacted">{formatDate(lead.last_contacted_at || '')}</Field></section>
           <section className="lg:col-span-2"><h3 className="mb-3 font-bold text-white/70">Raw submission JSON</h3><pre className="max-h-80 overflow-auto rounded-xl bg-black/60 p-4 text-xs text-white/65">{JSON.stringify(lead.raw_submission_json, null, 2)}</pre></section>
           {lead.error_message && <section className="lg:col-span-2 rounded-xl border border-red-400/40 bg-red-500/10 p-4 text-red-100"><h3 className="font-bold">Processing error</h3><p className="mt-2 whitespace-pre-wrap">{lead.error_message}</p></section>}
         </div>
@@ -421,7 +591,7 @@ function AdminRoutes() {
   if (isLogin || authed === false) return <LoginView onLoggedIn={() => { setAuthed(true); history.replaceState(null, '', '/admin/leads'); window.dispatchEvent(new PopStateEvent('popstate')); }} />;
   if (authed === null) return <div className="min-h-screen bg-brand-black p-10 text-white">Checking admin session...</div>;
 
-  return <AdminShell onLogout={logout}>{notice && <div className="mx-auto mt-6 max-w-7xl rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-red-100">{notice.message}</div>}{detailId ? (lead && data ? <LeadDetail lead={lead} refreshedAt={data.refreshedAt} source={data.source} /> : <div className="p-10">Loading prospect...</div>) : (data ? <LeadsList data={data} onRefresh={loadLeads} /> : <div className="p-10">Loading prospects...</div>)}</AdminShell>;
+  return <AdminShell onLogout={logout}>{notice && <div className="mx-auto mt-6 max-w-7xl rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-red-100">{notice.message}</div>}{detailId ? (lead && data ? <LeadDetail lead={lead} refreshedAt={data.refreshedAt} source={data.source} onLeadUpdated={(updatedLead, refreshedAt, source) => { setLead(updatedLead); setData({ leads: [updatedLead], refreshedAt, source: source as any }); }} /> : <div className="p-10">Loading prospect...</div>) : (data ? <LeadsList data={data} onRefresh={loadLeads} /> : <div className="p-10">Loading prospects...</div>)}</AdminShell>;
 }
 
 export default function AdminApp() {

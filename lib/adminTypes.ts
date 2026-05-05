@@ -10,6 +10,23 @@ export type LeadStatus =
 
 export type LeadPriority = 'HOT' | 'WARM' | 'COOL' | 'DISQUALIFY' | 'NEEDS_REVIEW' | string;
 
+export type LeadDisposition =
+  | 'NEEDS_RESEARCH'
+  | 'NEEDS_OWNER_INPUT'
+  | 'READY_FOR_REVIEW'
+  | 'READY_TO_REPLY'
+  | 'REPLIED'
+  | 'WAITING_ON_PROSPECT'
+  | 'CALL_SCHEDULED'
+  | 'QUALIFYING'
+  | 'SAMPLE_FOLLOW_UP'
+  | 'OPPORTUNITY'
+  | 'NURTURE'
+  | 'DISQUALIFIED'
+  | 'SPAM_OR_VENDOR'
+  | 'CLOSED_NO_ACTION'
+  | string;
+
 export interface Lead {
   id: string;
   rowNumber: number;
@@ -54,6 +71,47 @@ export interface Lead {
   error_message: string;
   create_gmail_draft: string;
   gmail_draft_id: string;
+
+  research_depth?: string;
+  research_status?: string;
+  narrow_research_summary?: string;
+  wide_research_summary?: string;
+  company_facts_json?: unknown;
+  product_portfolio_json?: unknown;
+  distribution_channels_json?: unknown;
+  retailer_presence_json?: unknown;
+  manufacturing_or_copacker_signals_json?: unknown;
+  recent_news_json?: unknown;
+  leadership_contacts_json?: unknown;
+  decision_maker_hypothesis?: string;
+  use_case_hypothesis?: string;
+  personalization_hooks_json?: string[];
+  competitive_context?: string;
+  research_confidence?: number | null;
+  research_gaps_json?: string[];
+  nepq_angle?: string;
+  nepq_discovery_questions_json?: string[];
+  nepq_tone_notes?: string;
+  response_strategy?: string;
+  follow_up_question_stack_json?: string[];
+  human_review_flags_json?: string[];
+  source_evidence_json?: unknown;
+  research_evidence_json?: unknown;
+
+  disposition?: LeadDisposition;
+  disposition_reason?: string;
+  disposition_updated_at?: string;
+  disposition_updated_by?: string;
+  last_human_action_at?: string;
+  next_follow_up_at?: string;
+  next_follow_up_note?: string;
+  owner_notes?: string;
+  internal_conversation_notes?: string;
+  last_contacted_at?: string;
+  replied_at?: string;
+  call_scheduled_at?: string;
+  pipeline_value_estimate?: string;
+  pipeline_stage?: string;
 }
 
 export interface LeadsResponse {
