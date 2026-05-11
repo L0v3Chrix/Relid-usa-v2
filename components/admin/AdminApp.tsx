@@ -348,6 +348,7 @@ function LeadsList({ data, onRefresh }: { data: LeadsResponse; onRefresh: () => 
           <h1 className="font-heading text-4xl font-black md:text-5xl">Who needs a human follow-up?</h1>
           <p className="mt-3 max-w-3xl text-white/65">Relationship-first view of inbound Re:Lid interest: who they are, why they care, how strong the opportunity is, and what sales should do next.</p>
           <p className="mt-2 text-xs text-white/45">Data last updated {formatDate(data.lastDataUpdatedAt || data.refreshedAt)} · Page refreshed {formatDate(data.refreshedAt)} · Source: {sourceLabel(data.source)}</p>
+          <p className="mt-1 text-xs text-white/40">Automatic enrichment runs daily at 5:00 AM, 11:00 AM, and 6:00 PM Central. Refresh only re-reads the live Sheet; it does not send email or launch AI processing.</p>
         </div>
         <button onClick={onRefresh} className="inline-flex items-center justify-center gap-2 rounded-xl border border-brand-green/40 px-5 py-3 font-bold text-brand-green hover:bg-brand-green hover:text-brand-black"><RefreshCw size={18} /> Refresh prospects</button>
       </div>
